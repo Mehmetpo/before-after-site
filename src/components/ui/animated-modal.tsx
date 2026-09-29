@@ -17,8 +17,23 @@ interface ModalContextType {
 
 const ModalContext = createContext<ModalContextType | undefined>(undefined);
 
-export const ModalProvider = ({ children }: { children: ReactNode }) => {
-  const [open, setOpen] = useState(false);
+// Wiring: optional controlled mode (open / onOpenChange); uncontrolled by default.
+interface ModalControlProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export const ModalProvider = ({
+  children,
+  open: openProp,
+  onOpenChange,
+}: { children: ReactNode } & ModalControlProps) => {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = (next: boolean) => {
+    if (openProp === undefined) setOpenState(next);
+    onOpenChange?.(next);
+  };
 
   return (
     <ModalContext.Provider value={{ open, setOpen }}>
@@ -35,8 +50,16 @@ export const useModal = () => {
   return context;
 };
 
-export function Modal({ children }: { children: ReactNode }) {
-  return <ModalProvider>{children}</ModalProvider>;
+export function Modal({
+  children,
+  open,
+  onOpenChange,
+}: { children: ReactNode } & ModalControlProps) {
+  return (
+    <ModalProvider open={open} onOpenChange={onOpenChange}>
+      {children}
+    </ModalProvider>
+  );
 }
 
 export const ModalTrigger = ({
@@ -63,9 +86,11 @@ export const ModalTrigger = ({
 export const ModalBody = ({
   children,
   className,
+  "aria-labelledby": labelledBy,
 }: {
   children: ReactNode;
   className?: string;
+  "aria-labelledby"?: string;
 }) => {
   const { open } = useModal();
 
@@ -80,6 +105,22 @@ export const ModalBody = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const { setOpen } = useModal();
   useOutsideClick(modalRef, () => setOpen(false));
+
+  // Wiring: Escape closes; focus moves into the dialog and returns on close.
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const frame = requestAnimationFrame(() => modalRef.current?.focus());
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", onKey);
+      previous?.focus?.();
+    };
+  }, [open]);
 
   return (
     <AnimatePresence>
@@ -102,8 +143,12 @@ export const ModalBody = ({
 
           <motion.div
             ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={labelledBy}
+            tabIndex={-1}
             className={cn(
-              "min-h-[50%] max-h-[90%] md:max-w-[40%] bg-white dark:bg-neutral-950 border border-transparent dark:border-neutral-800 md:rounded-2xl relative z-50 flex flex-col flex-1 overflow-hidden",
+              "outline-none min-h-[50%] max-h-[90%] md:max-w-[40%] bg-white dark:bg-neutral-950 border border-transparent dark:border-neutral-800 md:rounded-2xl relative z-50 flex flex-col flex-1 overflow-hidden",
               className
             )}
             initial={{
@@ -185,7 +230,7 @@ const Overlay = ({ className }: { className?: string }) => {
         opacity: 0,
         backdropFilter: "blur(0px)",
       }}
-      className={`fixed inset-0 h-full w-full bg-black bg-opacity-50 z-50 ${className}`}
+      className={`fixed inset-0 h-full w-full bg-black/50 z-50 ${className}`}
     ></motion.div>
   );
 };
@@ -194,6 +239,8 @@ const CloseIcon = () => {
   const { setOpen } = useModal();
   return (
     <button
+      type="button"
+      aria-label="Close"
       onClick={() => setOpen(false)}
       className="absolute top-4 right-4 group"
     >
