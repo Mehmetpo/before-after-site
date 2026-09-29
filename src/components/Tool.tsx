@@ -1,5 +1,6 @@
-import { CircleHalf, Columns, Intersect, SquareSplitHorizontal, Swap } from '@phosphor-icons/react'
+import { ArrowsOut, CircleHalf, Columns, Intersect, SquareSplitHorizontal, Swap, X } from '@phosphor-icons/react'
 import { FileImageIcon } from '@hugeicons/core-free-icons'
+import { useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import ExpandingTabs, { type ExpandingTab } from '@/components/ui/expanding-tabs'
 import { FileUpload } from '@/components/ui/file-upload'
@@ -8,6 +9,7 @@ import { Toolbar } from '@/components/Toolbar'
 import { Viewer } from '@/components/Viewer'
 import { useCompareState } from '@/hooks/useCompareState'
 import { usePasteImages } from '@/hooks/usePasteImages'
+import { toggleFullscreen, useShortcuts } from '@/hooks/useShortcuts'
 import type { Mode } from '@/lib/compare-state'
 
 const IMAGE_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,image/avif'
@@ -28,6 +30,8 @@ const UPLOAD_ICONS = [
 export function Tool() {
   const { state, dispatch, addFiles } = useCompareState()
   usePasteImages(addFiles)
+  const viewerRef = useRef<HTMLDivElement>(null)
+  useShortcuts(state, dispatch, viewerRef)
 
   const ready = Boolean(state.before && state.after)
   const missing = !state.before ? (state.after ? 'the before image' : 'two images') : 'the after image'
@@ -57,14 +61,29 @@ export function Tool() {
               onChange={(mode) => dispatch({ type: 'mode', mode })}
               aria-label="Comparison mode"
             />
-            <Button variant="outline" size="sm" onClick={() => dispatch({ type: 'swap' })}>
-              <Swap />
-              Swap
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => dispatch({ type: 'swap' })}>
+                <Swap />
+                Swap
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => toggleFullscreen(viewerRef.current)}>
+                <ArrowsOut />
+                Fullscreen
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => dispatch({ type: 'clear' })}>
+                <X />
+                Clear
+              </Button>
+            </div>
           </div>
           <Toolbar state={state} dispatch={dispatch} />
-          <Viewer state={state} dispatch={dispatch} />
+          <div ref={viewerRef} className="bg-background">
+            <Viewer state={state} dispatch={dispatch} />
+          </div>
           <ExportBar state={state} dispatch={dispatch} />
+          <p className="text-sm text-muted-foreground">
+            Shortcuts: 1-4 modes, ←/→ slider, +/- zoom, R rotate, F fullscreen
+          </p>
         </>
       )}
     </section>

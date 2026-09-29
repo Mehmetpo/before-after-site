@@ -36,6 +36,7 @@ type PctKey = 'sliderPct' | 'fadeOpacity' | 'onionOpacity'
 export type Action =
   | { type: 'images'; images: LoadedImage[] }
   | { type: 'swap' }
+  | { type: 'clear' }
   | { type: 'mode'; mode: Mode }
   | { type: 'set'; key: PctKey; value: number }
   | { type: 'adjust'; key: keyof Adjust; value: number }
@@ -59,6 +60,8 @@ export function reducer(s: CompareState, a: Action): CompareState {
     }
     case 'swap':
       return { ...s, before: s.after, after: s.before }
+    case 'clear':
+      return { ...s, before: null, after: null, view: DEFAULT_VIEW }
     case 'mode':
       return { ...s, mode: a.mode }
     case 'set':
