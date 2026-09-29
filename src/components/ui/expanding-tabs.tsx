@@ -5,14 +5,8 @@
  * Selecting a tab expands it to reveal its label with layout animation.
  */
 
-import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  Bell,
-  CalendarBlank,
-  EnvelopeSimple,
-  MagnifyingGlass,
-} from "@phosphor-icons/react";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 
 const SPRING = {
   type: "spring" as const,
@@ -21,38 +15,46 @@ const SPRING = {
   mass: 0.7,
 };
 
-const tabs = [
-  { label: "Inbox", icon: EnvelopeSimple },
-  { label: "Calendar", icon: CalendarBlank },
-  { label: "Alerts", icon: Bell },
-  { label: "Search", icon: MagnifyingGlass },
-];
+export interface ExpandingTab<T extends string = string> {
+  id: T;
+  label: string;
+  icon?: PhosphorIcon;
+}
 
-export default function ExpandingTabs() {
-  const [activeTab, setActiveTab] = useState("Inbox");
+export interface ExpandingTabsProps<T extends string = string> {
+  tabs: ExpandingTab<T>[];
+  value: T;
+  onChange: (id: T) => void;
+  "aria-label"?: string;
+}
 
+export default function ExpandingTabs<T extends string = string>({
+  tabs,
+  value,
+  onChange,
+  "aria-label": ariaLabel = "Tabs",
+}: ExpandingTabsProps<T>) {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-[#E3E3E8] dark:bg-[#0E0E0F]">
       <motion.div
         layout
         transition={SPRING}
         role="tablist"
-        aria-label="Mail navigation"
+        aria-label={ariaLabel}
         className="flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-black/[0.035] bg-white/35 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.98)] dark:border-white/[0.055] dark:bg-white/[0.025] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]"
       >
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const isActive = activeTab === tab.label;
+          const isActive = value === tab.id;
 
           return (
             <motion.button
-              key={tab.label}
+              key={tab.id}
               layout
               type="button"
               role="tab"
               aria-selected={isActive}
               aria-label={tab.label}
-              onClick={() => setActiveTab(tab.label)}
+              onClick={() => onChange(tab.id)}
               whileHover={isActive ? undefined : { scale: 1.045 }}
               whileTap={{ scale: 0.94 }}
               transition={SPRING}
@@ -70,7 +72,7 @@ export default function ExpandingTabs() {
                 transition={SPRING}
                 className="flex shrink-0 items-center justify-center text-[#161618] dark:text-[#F3F3F4]"
               >
-                <Icon size="1.18em" weight="regular" aria-hidden="true" />
+                {Icon ? <Icon size="1.18em" weight="regular" aria-hidden="true" /> : null}
               </motion.span>
 
               <AnimatePresence initial={false}>
@@ -91,6 +93,5 @@ export default function ExpandingTabs() {
           );
         })}
       </motion.div>
-    </div>
   );
 }
