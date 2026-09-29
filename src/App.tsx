@@ -1,3 +1,9 @@
+import { Hero } from '@/components/Hero'
+
 export default function App() {
-  return <main className="p-8">Before &amp; After</main>
+  return (
+    <main>
+      <Hero />
+    </main>
+  )
 }

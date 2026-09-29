@@ -9,26 +9,32 @@ import {
   useSpring,
   useMotionValueEvent,
 } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-// Fresh, guaranteed working high-quality Unsplash images (Architecture & Minimalist theme)
-const IMAGES = [
-  { src: "https://cdn.21st.dev/assets/mirror/67/678d13ab2f51cc194ee7109f41e5c4b74a33f143dde876368a93b748a5bdb2f6.jpg", alt: "Modern House" },
-  { src: "https://cdn.21st.dev/assets/mirror/48/48db070b82ddcf8b658c59af85c75da59a27c6e58a5f00516c5f04e2bb56bfcc.jpg", alt: "Minimal Interior" },
-  { src: "https://cdn.21st.dev/assets/mirror/cb/cb94e95db92613e6820992054bd69aacd17bb6d19975d7074e3a0918a2e58ffa.jpg", alt: "Skyscraper" },
-  { src: "https://cdn.21st.dev/assets/mirror/0a/0ac930f1672abb5537c077f93d57630003552302f6298a35dd56e251b9551978.jpg", alt: "Office Space" },
-  { src: "https://cdn.21st.dev/assets/mirror/3d/3dd10040aa5ee45e1a0a219a5f723f31d2b99ed12e22974fdfb4925acee2b875.jpg", alt: "White Building" },
-  { src: "https://cdn.21st.dev/assets/mirror/48/48db070b82ddcf8b658c59af85c75da59a27c6e58a5f00516c5f04e2bb56bfcc.jpg", alt: "Minimal Interior 2" },
-  { src: "https://cdn.21st.dev/assets/mirror/cb/cb94e95db92613e6820992054bd69aacd17bb6d19975d7074e3a0918a2e58ffa.jpg", alt: "Skyscraper 2" },
-  { src: "https://cdn.21st.dev/assets/mirror/ed/ed485fec61b842ac40b18e53cdac628a9049fcdbd4a07be356cd75a39a58ff6b.jpg", alt: "Minimal Home" },
-];
+import type { ReactNode } from "react";
+
+/** One gallery card: any content (image, comparison, ...) plus an optional caption. */
+export interface PanoramicCard {
+  key: string;
+  content: ReactNode;
+  caption?: string;
+}
+
+export interface PanoramicSpreadHeroProps {
+  cards: PanoramicCard[];
+  eyebrow?: ReactNode;
+  title: ReactNode;
+  description?: ReactNode;
+  /** Rendered under the description (e.g. a call-to-action button). */
+  action?: ReactNode;
+}
 
 // Calculate a sweeping 3D arch around the center point for both mobile and desktop
-const generatePanoramicCards = () => {
-  const total = IMAGES.length;
+const generatePanoramicCards = (items: PanoramicCard[]) => {
+  const total = items.length;
   const centerIndex = (total - 1) / 2;
 
-  return IMAGES.map((item, i) => {
+  return items.map((item, i) => {
     const offset = i - centerIndex;
     const absOffset = Math.abs(offset);
     const zIndex = Math.round(10 - absOffset);
@@ -54,8 +60,6 @@ const generatePanoramicCards = () => {
     };
   });
 };
-
-const CARDS = generatePanoramicCards();
 
 // Optimized physics to remove scroll jitter (higher damping, zero bounce)
 const PROGRESS_SPRING = { stiffness: 80, damping: 25, mass: 0.5, restDelta: 0.001 };
@@ -128,20 +132,27 @@ function GalleryCard({ card, progress, isMobile }: any) {
           {/* Polaroid-style aesthetic frame */}
           <div className="relative h-full w-full overflow-hidden rounded-sm bg-neutral-200 dark:bg-neutral-800">
             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10 pointer-events-none" />
-            <img
-              src={item.src}
-              alt={item.alt}
-              draggable={false}
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
+            <div className="absolute inset-0 h-full w-full">{item.content}</div>
           </div>
+          {item.caption ? (
+            <span className="pointer-events-none absolute inset-x-2 bottom-0 flex h-6 items-center truncate text-[11px] font-medium text-neutral-600 max-md:inset-x-1 max-md:h-3 max-md:text-[8px]">
+              {item.caption}
+            </span>
+          ) : null}
         </div>
       </motion.div>
     </div>
   );
 }
 
-export default function PanoramicSpreadHero() {
+export default function PanoramicSpreadHero({
+  cards,
+  eyebrow,
+  title,
+  description,
+  action,
+}: PanoramicSpreadHeroProps) {
+  const CARDS = useMemo(() => generatePanoramicCards(cards), [cards]);
   const wrapRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
@@ -188,12 +199,12 @@ export default function PanoramicSpreadHero() {
 
         {/* Scene Container - Reacts to pointer tilt for whole-gallery parallax */}
         <motion.div
-          className="absolute inset-0 z-10 flex items-center justify-center"
+          className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
           style={{ rotateX: tiltX, rotateY: tiltY, transformStyle: "preserve-3d" }}
         >
           {CARDS.map((card, i) => (
             <GalleryCard
-              key={i}
+              key={card.item.key ?? i}
               card={card}
               progress={progress}
               isSpreadActive={spread}
@@ -207,16 +218,20 @@ export default function PanoramicSpreadHero() {
           className="pointer-events-none absolute z-[5] flex flex-col items-center text-center px-6"
           style={{ y: textY, scale: textScale, opacity: textOpacity }}
         >
-          <span className="text-xs md:text-[0.9vw] uppercase tracking-[0.4em] font-semibold text-neutral-500 dark:text-neutral-400 mb-4">
-            Exhibition
-          </span>
+          {eyebrow ? (
+            <span className="text-xs md:text-[0.9vw] uppercase tracking-[0.4em] font-semibold text-neutral-500 dark:text-neutral-400 mb-4">
+              {eyebrow}
+            </span>
+          ) : null}
           <h2 className="text-5xl md:text-[5.5vw] font-serif leading-none tracking-tight">
-            Curated Space.
+            {title}
           </h2>
-          <p className="mt-6 max-w-[45ch] text-sm md:text-[1.1vw] font-light leading-relaxed opacity-70">
-            Scroll to unspool the collection. Leveraging 3D spatial transforms to
-            bend the digital layout dynamically around the viewer.
-          </p>
+          {description ? (
+            <p className="mt-6 max-w-[45ch] text-sm md:text-[1.1vw] font-light leading-relaxed opacity-70">
+              {description}
+            </p>
+          ) : null}
+          {action ? <div className="pointer-events-auto mt-6">{action}</div> : null}
         </motion.div>
       </div>
     </section>
