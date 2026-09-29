@@ -3,6 +3,8 @@ import { FileImageIcon } from '@hugeicons/core-free-icons'
 import { Button } from '@/components/ui/button'
 import ExpandingTabs, { type ExpandingTab } from '@/components/ui/expanding-tabs'
 import { FileUpload } from '@/components/ui/file-upload'
+import { ExportBar } from '@/components/ExportBar'
+import { Toolbar } from '@/components/Toolbar'
 import { Viewer } from '@/components/Viewer'
 import { useCompareState } from '@/hooks/useCompareState'
 import { usePasteImages } from '@/hooks/usePasteImages'
@@ -60,7 +62,9 @@ export function Tool() {
               Swap
             </Button>
           </div>
+          <Toolbar state={state} dispatch={dispatch} />
           <Viewer state={state} dispatch={dispatch} />
+          <ExportBar state={state} dispatch={dispatch} />
         </>
       )}
     </section>

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  CropIcon,
   DownloadIcon,
   Maximize2Icon,
   RotateCcwIcon,
@@ -24,29 +23,53 @@ import {
   TooltipTrigger,
 } from "@/components/ui/v-toolbar-3-utils/tooltip";
 
-const transformTools = [
-  { icon: CropIcon, label: "Crop" },
-  { icon: RotateCcwIcon, label: "Rotate left" },
-  { icon: RotateCwIcon, label: "Rotate right" },
-] as const;
+// Wiring: the demo's hardcoded buttons now call these handlers. Crop was removed
+// (out of scope); Export renders only when a handler is passed.
+export interface PatternProps {
+  onRotateLeft?: () => void;
+  onRotateRight?: () => void;
+  onZoomOut?: () => void;
+  onZoomIn?: () => void;
+  onFit?: () => void;
+  onAdjustments?: () => void;
+  adjustmentsOpen?: boolean;
+  onExport?: () => void;
+  "aria-label"?: string;
+}
 
-const zoomTools = [
-  { icon: ZoomOutIcon, label: "Zoom out" },
-  { icon: ZoomInIcon, label: "Zoom in" },
-  { icon: Maximize2Icon, label: "Fit to screen" },
-] as const;
+export function Pattern({
+  onRotateLeft,
+  onRotateRight,
+  onZoomOut,
+  onZoomIn,
+  onFit,
+  onAdjustments,
+  adjustmentsOpen,
+  onExport,
+  "aria-label": ariaLabel,
+}: PatternProps = {}) {
+  const transformTools = [
+    { icon: RotateCcwIcon, label: "Rotate left", onClick: onRotateLeft },
+    { icon: RotateCwIcon, label: "Rotate right", onClick: onRotateRight },
+  ] as const;
 
-export function Pattern() {
+  const zoomTools = [
+    { icon: ZoomOutIcon, label: "Zoom out", onClick: onZoomOut },
+    { icon: ZoomInIcon, label: "Zoom in", onClick: onZoomIn },
+    { icon: Maximize2Icon, label: "Fit to screen", onClick: onFit },
+  ] as const;
+
   return (
     <TooltipProvider>
-      <Toolbar>
+      <Toolbar aria-label={ariaLabel}>
         <ToolbarGroup>
-          {transformTools.map(({ icon: Icon, label }) => (
+          {transformTools.map(({ icon: Icon, label, onClick }) => (
             <Tooltip key={label}>
               <TooltipTrigger
                 render={
                   <ToolbarButton
                     aria-label={label}
+                    onClick={onClick}
                     render={<Button size="icon" variant="ghost" />}
                   >
                     <Icon />
@@ -61,12 +84,13 @@ export function Pattern() {
         <ToolbarSeparator />
 
         <ToolbarGroup>
-          {zoomTools.map(({ icon: Icon, label }) => (
+          {zoomTools.map(({ icon: Icon, label, onClick }) => (
             <Tooltip key={label}>
               <TooltipTrigger
                 render={
                   <ToolbarButton
                     aria-label={label}
+                    onClick={onClick}
                     render={<Button size="icon" variant="ghost" />}
                   >
                     <Icon />
@@ -86,6 +110,8 @@ export function Pattern() {
               render={
                 <ToolbarButton
                   aria-label="Adjustments"
+                  aria-pressed={adjustmentsOpen}
+                  onClick={onAdjustments}
                   render={<Button size="icon" variant="ghost" />}
                 >
                   <SlidersHorizontalIcon />
@@ -96,14 +122,18 @@ export function Pattern() {
           </Tooltip>
         </ToolbarGroup>
 
-        <ToolbarSeparator />
+        {onExport && (
+          <>
+            <ToolbarSeparator />
 
-        <ToolbarGroup>
-          <ToolbarButton render={<Button size="sm" />}>
-            <DownloadIcon />
-            Export
-          </ToolbarButton>
-        </ToolbarGroup>
+            <ToolbarGroup>
+              <ToolbarButton onClick={onExport} render={<Button size="sm" />}>
+                <DownloadIcon />
+                Export
+              </ToolbarButton>
+            </ToolbarGroup>
+          </>
+        )}
       </Toolbar>
     </TooltipProvider>
   );
