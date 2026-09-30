@@ -5,6 +5,7 @@ import { boxAspect, clampPan, contentAspect, cssTransform } from '@/lib/transfor
 import { CompareReveal } from '@/components/ui/compare-reveal'
 
 const imgFit = 'h-full w-full object-contain'
+const afterFit = (align: 'fit' | 'stretch') => (align === 'stretch' ? 'h-full w-full object-fill' : imgFit)
 
 export function Viewer({
   state,
@@ -141,7 +142,7 @@ export function Viewer({
         {mode === 'slider' && (
           <CompareReveal
             before={<img src={before.url} alt="Before" draggable={false} className={imgFit} />}
-            after={<img src={after.url} alt="After" draggable={false} className={imgFit} />}
+            after={<img src={after.url} alt="After" draggable={false} className={afterFit(state.align)} />}
             position={state.sliderPct}
             onPositionChange={(v: number) => dispatch({ type: 'set', key: 'sliderPct', value: v })}
             snapOnDoubleClick={50}
@@ -152,7 +153,7 @@ export function Viewer({
         {mode === 'side' && (
           <div className="grid grid-cols-2 gap-1">
             <img src={before.url} alt="Before" draggable={false} className="w-full object-contain" style={aspect} />
-            <img src={after.url} alt="After" draggable={false} className="w-full object-contain" style={aspect} />
+            <img src={after.url} alt="After" draggable={false} className={`w-full ${state.align === 'stretch' ? 'object-fill' : 'object-contain'}`} style={aspect} />
           </div>
         )}
         {(mode === 'fade' || mode === 'onion') && (
@@ -162,7 +163,7 @@ export function Viewer({
               src={after.url}
               alt="After"
               draggable={false}
-              className={`absolute inset-0 ${imgFit}`}
+              className={`absolute inset-0 ${afterFit(state.align)}`}
               // Fade is plain alpha; onion is a difference blend. Both mirror render.ts.
               style={{
                 opacity: (mode === 'fade' ? state.fadeOpacity : state.onionOpacity) / 100,

@@ -73,7 +73,7 @@ export function planExport(s: CompareState, kind: ExportKind, box?: BoxSize, opt
   const cw = s.before.width
   const ch = s.before.height
   const b = fit(s.before.width, s.before.height, cw, ch)
-  const a = fit(s.after.width, s.after.height, cw, ch)
+  const a = s.align === 'stretch' ? { w: cw, h: ch } : fit(s.after.width, s.after.height, cw, ch)
   const sideBySide = kind === 'combined' || s.mode === 'side'
 
   let layers: Layer[]

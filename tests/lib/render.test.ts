@@ -10,6 +10,19 @@ const base = (over: Partial<CompareState> = {}): CompareState => ({
   ...over,
 })
 
+describe('planExport align', () => {
+  const mismatch = (align: 'fit' | 'stretch') =>
+    base({ before: img(800, 600), after: img(400, 400), mode: 'fade', align })
+  it('fit keeps the after aspect ratio and centres it', () => {
+    const l = planExport(mismatch('fit'), 'snapshot')!.layers[1]
+    expect(l).toMatchObject({ dw: 600, dh: 600, dx: 100, dy: 0 })
+  })
+  it('stretch fills the before frame', () => {
+    const l = planExport(mismatch('stretch'), 'snapshot')!.layers[1]
+    expect(l).toMatchObject({ dw: 800, dh: 600, dx: 0, dy: 0 })
+  })
+})
+
 describe('planExport maxSide', () => {
   it('shrinks the longest side to maxSide and scales pan/zoom consistently', () => {
     const p = planExport(base({ mode: 'slider' }), 'snapshot', undefined, { maxSide: 400 })!

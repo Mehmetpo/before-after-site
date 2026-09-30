@@ -4,6 +4,7 @@ import type { LoadedImage } from '@/lib/image-load'
 import { DEFAULT_VIEW, rotateBy, zoomBy, type View } from '@/lib/transform'
 
 export type Mode = 'slider' | 'side' | 'fade' | 'onion'
+export type Align = 'fit' | 'stretch'
 export type Format = 'png' | 'jpeg' | 'webp'
 
 export interface CompareState {
@@ -16,6 +17,8 @@ export interface CompareState {
   view: View
   adjust: Adjust
   /** Single-photo mode: `after` is generated from `before` by the enhancement settings. */
+  /** How an after image of a different size is placed over the before frame. */
+  align: Align
   enhanceMode: boolean
   enhance: Enhance
   format: Format
@@ -31,6 +34,7 @@ export const initialState: CompareState = {
   onionOpacity: 100,
   view: DEFAULT_VIEW,
   adjust: NEUTRAL_ADJUST,
+  align: 'fit',
   enhanceMode: false,
   enhance: NEUTRAL_ENHANCE,
   format: 'png',
@@ -46,6 +50,7 @@ export type Action =
   | { type: 'mode'; mode: Mode }
   | { type: 'set'; key: PctKey; value: number }
   | { type: 'adjust'; key: keyof Adjust; value: number }
+  | { type: 'align'; align: Align }
   | { type: 'enhanceStart'; image: LoadedImage }
   | { type: 'enhanceSet'; key: keyof Enhance; value: number }
   | { type: 'enhanceReset' }
@@ -79,6 +84,8 @@ export function reducer(s: CompareState, a: Action): CompareState {
       return { ...s, [a.key]: pct(a.value) }
     case 'adjust':
       return { ...s, adjust: { ...s.adjust, [a.key]: clampPct(a.value) } }
+    case 'align':
+      return { ...s, align: a.align }
     case 'enhanceStart':
       return { ...s, before: a.image, after: null, enhanceMode: true, enhance: NEUTRAL_ENHANCE, view: DEFAULT_VIEW }
     case 'enhanceSet':

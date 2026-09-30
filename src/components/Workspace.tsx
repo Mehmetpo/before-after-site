@@ -2,6 +2,7 @@ import { ArrowsOut, CircleHalf, Columns, Intersect, SquareSplitHorizontal, Swap,
 import { useRef, type Dispatch, type RefObject } from 'react'
 import { Button } from '@/components/ui/button'
 import ExpandingTabs, { type ExpandingTab } from '@/components/ui/expanding-tabs'
+import { CompareStats } from '@/components/CompareStats'
 import { EnhancePanel } from '@/components/EnhancePanel'
 import { ExportBar } from '@/components/ExportBar'
 import { ShareBar } from '@/components/ShareBar'
@@ -61,6 +62,7 @@ export default function Workspace({
       </div>
       <ExportBar state={state} dispatch={dispatch} boxRef={boxRef} />
       <ShareBar state={state} boxRef={boxRef} />
+      <CompareStats state={state} dispatch={dispatch} />
       <p className="text-sm text-muted-foreground">
         Shortcuts: 1-4 modes, ←/→ slider, +/- zoom, R rotate, F fullscreen
       </p>
