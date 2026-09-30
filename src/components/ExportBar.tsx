@@ -4,6 +4,7 @@ import DownloadButton from '@/components/ui/button-download'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import type { Action, CompareState, Format } from '@/lib/compare-state'
+import { trackEvent } from '@/lib/analytics'
 import { buildFilename, canvasToBlob, downloadBlob } from '@/lib/export'
 import { renderToCanvas, type ExportKind } from '@/lib/render'
 
@@ -87,6 +88,7 @@ export function ExportBar({
       }
       setProgress(100)
       downloadBlob(blob, buildFilename(kind, current.format))
+      trackEvent('export', { kind, format: current.format })
       later(250, () => setStatus('downloaded'))
       later(1450, () => setStatus('complete'))
       later(1750, reset)

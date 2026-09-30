@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://before-after-site-ten.vercel.app/sitemap.xml

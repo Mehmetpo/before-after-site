@@ -1,7 +1,8 @@
 import { FileImageIcon } from '@hugeicons/core-free-icons'
-import { lazy, Suspense, useRef } from 'react'
+import { lazy, Suspense, useEffect, useRef } from 'react'
 import { FileUpload } from '@/components/ui/file-upload'
 import { useCompareState } from '@/hooks/useCompareState'
+import { trackEvent } from '@/lib/analytics'
 import { usePasteImages } from '@/hooks/usePasteImages'
 import { useShortcuts } from '@/hooks/useShortcuts'
 
@@ -22,6 +23,13 @@ export function Tool() {
   useShortcuts(state, dispatch, viewerRef)
 
   const ready = Boolean(state.before && state.after)
+  useEffect(() => {
+    if (ready) trackEvent('compare_ready')
+  }, [ready])
+  useEffect(() => {
+    if (ready) trackEvent('mode_change', { mode: state.mode })
+  }, [ready, state.mode])
+
   const missing = !state.before ? (state.after ? 'the before image' : 'two images') : 'the after image'
 
   return (
