@@ -18,4 +18,7 @@ export const SAMPLE_PAIRS: SamplePair[] = [
   { slug: 'exposure', title: 'Exposure', beforeLabel: 'Overexposed', afterLabel: 'Balanced', photographer: 'Luca Iaconelli' },
 ]
 
-export const sampleUrl = (slug: string, which: 'before' | 'after') => `/samples/${slug}-${which}.webp`
+// import.meta.env is undefined outside Vite (plain node), so fall back to the root.
+const BASE = import.meta.env?.BASE_URL ?? '/'
+
+export const sampleUrl = (slug: string, which: 'before' | 'after') => `${BASE}samples/${slug}-${which}.webp`
