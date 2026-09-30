@@ -6,6 +6,7 @@
  */
 
 import { AnimatePresence, motion } from "framer-motion";
+import { useRef, type KeyboardEvent } from "react";
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 
 const SPRING = {
@@ -34,25 +35,47 @@ export default function ExpandingTabs<T extends string = string>({
   onChange,
   "aria-label": ariaLabel = "Tabs",
 }: ExpandingTabsProps<T>) {
+  const buttons = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // WAI-ARIA tabs pattern: roving tabindex, arrows/Home/End move focus and select.
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const from = tabs.findIndex((t) => t.id === value);
+    const last = tabs.length - 1;
+    let to: number;
+    if (e.key === "ArrowRight") to = from >= last ? 0 : from + 1;
+    else if (e.key === "ArrowLeft") to = from <= 0 ? last : from - 1;
+    else if (e.key === "Home") to = 0;
+    else if (e.key === "End") to = last;
+    else return;
+    e.preventDefault();
+    onChange(tabs[to].id);
+    buttons.current[to]?.focus();
+  };
+
   return (
       <motion.div
         layout
         transition={SPRING}
         role="tablist"
         aria-label={ariaLabel}
+        onKeyDown={onKeyDown}
         className="flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-black/[0.035] bg-white/35 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.98)] dark:border-white/[0.055] dark:bg-white/[0.025] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]"
       >
-        {tabs.map((tab) => {
+        {tabs.map((tab, i) => {
           const Icon = tab.icon;
           const isActive = value === tab.id;
 
           return (
             <motion.button
               key={tab.id}
+              ref={(el: HTMLButtonElement | null) => {
+                buttons.current[i] = el;
+              }}
               layout
               type="button"
               role="tab"
               aria-selected={isActive}
+              tabIndex={isActive ? 0 : -1}
               aria-label={tab.label}
               onClick={() => onChange(tab.id)}
               whileHover={isActive ? undefined : { scale: 1.045 }}

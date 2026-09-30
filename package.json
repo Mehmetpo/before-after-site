@@ -21,7 +21,6 @@
     "border-beam": "^1.4.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "cn": "^0.4.0",
     "framer-motion": "^13.4.6",
     "lucide-react": "^1.48.0",
     "motion": "^13.4.6",
@@ -39,8 +38,8 @@
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
-    "sharp": "^0.35.5",
     "shadcn": "^4.21.0",
+    "sharp": "^0.35.5",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vitest": "^5.0.2"

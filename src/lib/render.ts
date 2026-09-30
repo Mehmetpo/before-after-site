@@ -1,5 +1,5 @@
 import type { CompareState } from '@/lib/compare-state'
-import { filterString } from '@/lib/filters'
+import { adjustPixels, filterString, type Adjust } from '@/lib/filters'
 
 export type ExportKind = 'combined' | 'snapshot'
 
@@ -10,6 +10,8 @@ export interface Layer {
   dw: number
   dh: number
   alpha: number
+  /** Canvas blend mode; omitted means normal source-over. */
+  blend?: GlobalCompositeOperation
   clip?: { x: number; y: number; w: number; h: number }
 }
 
@@ -18,6 +20,8 @@ export interface ExportPlan {
   height: number
   layers: Layer[]
   filter: string
+  /** Same adjustment as `filter`, for canvases that cannot apply `ctx.filter`. */
+  adjust: Adjust
   /** Opaque fill drawn before the layers (formats without alpha), or null to stay transparent. */
   background: string | null
   rotation: 0 | 90 | 180 | 270
@@ -86,7 +90,8 @@ export function planExport(s: CompareState, kind: ExportKind, box?: BoxSize): Ex
     } else if (s.mode === 'fade') {
       layers = [beforeLayer, { ...afterBase, alpha: s.fadeOpacity / 100 }]
     } else {
-      layers = [beforeLayer, { ...afterBase, alpha: s.onionOpacity / 100 }]
+      // Onion = difference blend: identical pixels go black, changes light up.
+      layers = [beforeLayer, { ...afterBase, alpha: s.onionOpacity / 100, blend: 'difference' }]
     }
   }
 
@@ -103,6 +108,7 @@ export function planExport(s: CompareState, kind: ExportKind, box?: BoxSize): Ex
     scale: cap.scale,
     layers,
     filter: filterString(s.adjust),
+    adjust: s.adjust,
     background: s.format === 'png' ? null : '#ffffff',
     rotation: s.view.rotation,
     zoom: kind === 'snapshot' ? s.view.zoom : 1,
@@ -113,17 +119,15 @@ export function planExport(s: CompareState, kind: ExportKind, box?: BoxSize): Ex
   }
 }
 
-export function drawPlan(
+/** Safari has no `ctx.filter`; assigning to it there silently does nothing. */
+const supportsCtxFilter = (ctx: CanvasRenderingContext2D) => typeof ctx.filter === 'string'
+
+function drawLayers(
   ctx: CanvasRenderingContext2D,
   plan: ExportPlan,
   images: { before: CanvasImageSource; after: CanvasImageSource },
 ): void {
   ctx.save()
-  if (plan.background) {
-    ctx.fillStyle = plan.background
-    ctx.fillRect(0, 0, plan.width, plan.height)
-  }
-  ctx.filter = plan.filter
   ctx.translate(plan.width / 2 + plan.panX, plan.height / 2 + plan.panY)
   ctx.rotate((plan.rotation * Math.PI) / 180)
   ctx.scale(plan.zoom * plan.scale, plan.zoom * plan.scale)
@@ -136,8 +140,40 @@ export function drawPlan(
       ctx.clip()
     }
     ctx.globalAlpha = l.alpha
+    ctx.globalCompositeOperation = l.blend ?? 'source-over'
     ctx.drawImage(images[l.which], l.dx, l.dy, l.dw, l.dh)
     ctx.restore()
+  }
+  ctx.restore()
+}
+
+export function drawPlan(
+  ctx: CanvasRenderingContext2D,
+  plan: ExportPlan,
+  images: { before: CanvasImageSource; after: CanvasImageSource },
+): void {
+  ctx.save()
+  if (plan.background) {
+    ctx.fillStyle = plan.background
+    ctx.fillRect(0, 0, plan.width, plan.height)
+  }
+  if (plan.filter === 'none' || supportsCtxFilter(ctx)) {
+    ctx.filter = plan.filter
+    drawLayers(ctx, plan, images)
+  } else {
+    // Adjust the layers on their own transparent canvas so the background fill stays untouched,
+    // matching what ctx.filter does above.
+    const scratch = document.createElement('canvas')
+    scratch.width = plan.width
+    scratch.height = plan.height
+    const sctx = scratch.getContext('2d')
+    if (!sctx) throw new Error('Your browser could not create a drawing surface for this image. Try a smaller image.')
+    drawLayers(sctx, plan, images)
+    const data = sctx.getImageData(0, 0, plan.width, plan.height)
+    adjustPixels(data.data, plan.adjust)
+    sctx.putImageData(data, 0, 0)
+    ctx.drawImage(scratch, 0, 0)
+    scratch.width = scratch.height = 0
   }
   ctx.restore()
 }
