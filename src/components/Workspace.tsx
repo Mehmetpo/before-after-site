@@ -2,6 +2,7 @@ import { ArrowsOut, CircleHalf, Columns, Intersect, SquareSplitHorizontal, Swap,
 import { useRef, type Dispatch, type RefObject } from 'react'
 import { Button } from '@/components/ui/button'
 import ExpandingTabs, { type ExpandingTab } from '@/components/ui/expanding-tabs'
+import { EnhancePanel } from '@/components/EnhancePanel'
 import { ExportBar } from '@/components/ExportBar'
 import { Toolbar } from '@/components/Toolbar'
 import { Viewer } from '@/components/Viewer'
@@ -36,10 +37,12 @@ export default function Workspace({
           aria-label="Comparison mode"
         />
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => dispatch({ type: 'swap' })}>
-            <Swap />
-            Swap
-          </Button>
+          {!state.enhanceMode && (
+            <Button variant="outline" size="sm" onClick={() => dispatch({ type: 'swap' })}>
+              <Swap />
+              Swap
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => toggleFullscreen(viewerRef.current)}>
             <ArrowsOut />
             Fullscreen
@@ -50,6 +53,7 @@ export default function Workspace({
           </Button>
         </div>
       </div>
+      {state.enhanceMode && <EnhancePanel state={state} dispatch={dispatch} />}
       <Toolbar state={state} dispatch={dispatch} />
       <div ref={viewerRef} className="bg-background">
         <Viewer state={state} dispatch={dispatch} boxRef={boxRef} />

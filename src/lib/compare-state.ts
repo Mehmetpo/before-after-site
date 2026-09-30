@@ -1,3 +1,4 @@
+import { clampEnhance, NEUTRAL_ENHANCE, type Enhance } from '@/lib/enhance'
 import { clampPct, NEUTRAL_ADJUST, type Adjust } from '@/lib/filters'
 import type { LoadedImage } from '@/lib/image-load'
 import { DEFAULT_VIEW, rotateBy, zoomBy, type View } from '@/lib/transform'
@@ -14,6 +15,9 @@ export interface CompareState {
   onionOpacity: number
   view: View
   adjust: Adjust
+  /** Single-photo mode: `after` is generated from `before` by the enhancement settings. */
+  enhanceMode: boolean
+  enhance: Enhance
   format: Format
   quality: number
 }
@@ -27,6 +31,8 @@ export const initialState: CompareState = {
   onionOpacity: 100,
   view: DEFAULT_VIEW,
   adjust: NEUTRAL_ADJUST,
+  enhanceMode: false,
+  enhance: NEUTRAL_ENHANCE,
   format: 'png',
   quality: 92,
 }
@@ -40,6 +46,10 @@ export type Action =
   | { type: 'mode'; mode: Mode }
   | { type: 'set'; key: PctKey; value: number }
   | { type: 'adjust'; key: keyof Adjust; value: number }
+  | { type: 'enhanceStart'; image: LoadedImage }
+  | { type: 'enhanceSet'; key: keyof Enhance; value: number }
+  | { type: 'enhanceReset' }
+  | { type: 'setAfter'; image: LoadedImage }
   | { type: 'zoom'; factor: number }
   | { type: 'pan'; dx: number; dy: number }
   | { type: 'rotate'; deg: 90 | -90 }
@@ -53,21 +63,30 @@ export function reducer(s: CompareState, a: Action): CompareState {
   switch (a.type) {
     case 'images': {
       const [first, second] = a.images
-      if (first && second) return { ...s, before: first, after: second }
-      if (first && !s.before) return { ...s, before: first }
-      if (first) return { ...s, after: first }
+      // Uploading real images always leaves enhance mode.
+      if (first && second) return { ...s, before: first, after: second, enhanceMode: false }
+      if (first && !s.before) return { ...s, before: first, enhanceMode: false }
+      if (first) return { ...s, after: first, enhanceMode: false }
       return s
     }
     case 'swap':
       return { ...s, before: s.after, after: s.before }
     case 'clear':
-      return { ...s, before: null, after: null, view: DEFAULT_VIEW }
+      return { ...s, before: null, after: null, view: DEFAULT_VIEW, enhanceMode: false, enhance: NEUTRAL_ENHANCE }
     case 'mode':
       return { ...s, mode: a.mode }
     case 'set':
       return { ...s, [a.key]: pct(a.value) }
     case 'adjust':
       return { ...s, adjust: { ...s.adjust, [a.key]: clampPct(a.value) } }
+    case 'enhanceStart':
+      return { ...s, before: a.image, after: null, enhanceMode: true, enhance: NEUTRAL_ENHANCE, view: DEFAULT_VIEW }
+    case 'enhanceSet':
+      return { ...s, enhance: { ...s.enhance, [a.key]: clampEnhance(a.key, a.value) } }
+    case 'enhanceReset':
+      return { ...s, enhance: NEUTRAL_ENHANCE }
+    case 'setAfter':
+      return { ...s, after: a.image }
     case 'zoom':
       return { ...s, view: zoomBy(s.view, a.factor) }
     case 'pan':
