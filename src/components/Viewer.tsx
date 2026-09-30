@@ -156,15 +156,18 @@ export function Viewer({
           </div>
         )}
         {(mode === 'fade' || mode === 'onion') && (
-          <div className="relative" style={aspect}>
+          <div className="relative isolate" style={aspect}>
             <img src={before.url} alt="Before" draggable={false} className={imgFit} />
             <img
               src={after.url}
               alt="After"
               draggable={false}
               className={`absolute inset-0 ${imgFit}`}
-              // Plain alpha, same as the legacy onion view and the render.ts export.
-              style={{ opacity: (mode === 'fade' ? state.fadeOpacity : state.onionOpacity) / 100 }}
+              // Fade is plain alpha; onion is a difference blend. Both mirror render.ts.
+              style={{
+                opacity: (mode === 'fade' ? state.fadeOpacity : state.onionOpacity) / 100,
+                mixBlendMode: mode === 'onion' ? 'difference' : undefined,
+              }}
             />
           </div>
         )}

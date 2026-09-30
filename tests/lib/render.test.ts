@@ -30,9 +30,14 @@ describe('planExport', () => {
     const p = planExport(base({ mode: 'fade', fadeOpacity: 30 }), 'snapshot')!
     expect(p.layers[1].alpha).toBeCloseTo(0.3)
   })
-  it('snapshot in onion mode uses onionOpacity and multiply-free blending', () => {
+  it('snapshot in onion mode blends the after image with difference at onionOpacity', () => {
     const p = planExport(base({ mode: 'onion', onionOpacity: 60 }), 'snapshot')!
     expect(p.layers[1].alpha).toBeCloseTo(0.6)
+    expect(p.layers[1].blend).toBe('difference')
+    expect(p.layers[0].blend).toBeUndefined()
+  })
+  it('fade mode stays a plain alpha crossfade', () => {
+    expect(planExport(base({ mode: 'fade' }), 'snapshot')!.layers[1].blend).toBeUndefined()
   })
   it('snapshot in side mode equals the combined layout', () => {
     const a = planExport(base({ mode: 'side' }), 'snapshot')!

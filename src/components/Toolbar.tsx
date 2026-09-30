@@ -71,7 +71,7 @@ export function Toolbar({ state, dispatch }: { state: CompareState; dispatch: Di
           />
           {opacityKey && (
             <SliderRow
-              label={mode === 'fade' ? 'Fade' : 'Onion opacity'}
+              label={mode === 'fade' ? 'Fade' : 'Diff strength'}
               value={state[opacityKey]}
               min={0}
               max={100}

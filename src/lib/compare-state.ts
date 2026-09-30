@@ -24,7 +24,7 @@ export const initialState: CompareState = {
   mode: 'slider',
   sliderPct: 50,
   fadeOpacity: 50,
-  onionOpacity: 50,
+  onionOpacity: 100,
   view: DEFAULT_VIEW,
   adjust: NEUTRAL_ADJUST,
   format: 'png',

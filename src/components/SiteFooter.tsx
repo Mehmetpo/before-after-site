@@ -1,11 +1,19 @@
-import { useState } from 'react'
-import { LEGAL_LINKS, LegalDialogs, type LegalPage } from '@/components/LegalDialogs'
+import { lazy, Suspense, useState } from 'react'
 import { AnimatedThemeToggle } from '@/components/ui/animated-theme-toggle'
 import { Button } from '@/components/ui/button'
 import { RuixenGradientFooter } from '@/components/ui/ruixen-gradient-footer'
+import { LEGAL_LINKS, type LegalPage } from '@/lib/legal'
+
+const LegalDialogs = lazy(() => import('@/components/LegalDialogs').then((m) => ({ default: m.LegalDialogs })))
 
 export function SiteFooter() {
   const [legal, setLegal] = useState<LegalPage | null>(null)
+  // Mount the dialogs chunk on first open and keep it so the close animation can play.
+  const [dialogsLoaded, setDialogsLoaded] = useState(false)
+  const openLegal = (id: LegalPage) => {
+    setDialogsLoaded(true)
+    setLegal(id)
+  }
   const year = new Date().getFullYear()
 
   return (
@@ -18,7 +26,7 @@ export function SiteFooter() {
           </div>
           <nav aria-label="Legal" className="-ml-3 flex flex-wrap gap-1">
             {LEGAL_LINKS.map(({ id, label }) => (
-              <Button key={id} variant="link" size="sm" onClick={() => setLegal(id)}>
+              <Button key={id} variant="link" size="sm" onClick={() => openLegal(id)}>
                 {label}
               </Button>
             ))}
@@ -32,7 +40,11 @@ export function SiteFooter() {
           </div>
         </div>
       </RuixenGradientFooter>
-      <LegalDialogs open={legal} onOpenChange={setLegal} />
+      {dialogsLoaded && (
+        <Suspense fallback={null}>
+          <LegalDialogs open={legal} onOpenChange={setLegal} />
+        </Suspense>
+      )}
     </>
   )
 }
