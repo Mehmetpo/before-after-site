@@ -107,3 +107,11 @@ describe('canvas area cap', () => {
     expect(capSize(100, 100, 1_000_000)).toEqual({ width: 100, height: 100, scale: 1 })
   })
 })
+
+describe('export background', () => {
+  it('fills jpeg and webp with white, leaves png transparent', () => {
+    expect(planExport(base({ format: 'jpeg' }), 'combined')!.background).toBe('#ffffff')
+    expect(planExport(base({ format: 'webp' }), 'snapshot')!.background).toBe('#ffffff')
+    expect(planExport(base({ format: 'png' }), 'combined')!.background).toBeNull()
+  })
+})

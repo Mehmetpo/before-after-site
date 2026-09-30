@@ -18,6 +18,8 @@ export interface ExportPlan {
   height: number
   layers: Layer[]
   filter: string
+  /** Opaque fill drawn before the layers (formats without alpha), or null to stay transparent. */
+  background: string | null
   rotation: 0 | 90 | 180 | 270
   /** Uniform scale applied on top of zoom so the canvas stays under the pixel cap. */
   scale: number
@@ -101,6 +103,7 @@ export function planExport(s: CompareState, kind: ExportKind, box?: BoxSize): Ex
     scale: cap.scale,
     layers,
     filter: filterString(s.adjust),
+    background: s.format === 'png' ? null : '#ffffff',
     rotation: s.view.rotation,
     zoom: kind === 'snapshot' ? s.view.zoom : 1,
     panX: kind === 'snapshot' ? s.view.panX * kx * cap.scale : 0,
@@ -116,6 +119,10 @@ export function drawPlan(
   images: { before: CanvasImageSource; after: CanvasImageSource },
 ): void {
   ctx.save()
+  if (plan.background) {
+    ctx.fillStyle = plan.background
+    ctx.fillRect(0, 0, plan.width, plan.height)
+  }
   ctx.filter = plan.filter
   ctx.translate(plan.width / 2 + plan.panX, plan.height / 2 + plan.panY)
   ctx.rotate((plan.rotation * Math.PI) / 180)
