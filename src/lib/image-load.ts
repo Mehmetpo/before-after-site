@@ -23,6 +23,18 @@ export function validateFile(file: Pick<File, 'name' | 'type'>): Validation {
   return { ok: true }
 }
 
+/** Validates every file first, then keeps the first two valid ones (before, after). */
+export function selectFiles<T extends Pick<File, 'name' | 'type'>>(files: T[], limit = 2) {
+  const accepted: T[] = []
+  const rejected: { file: T; reason: string }[] = []
+  for (const file of files) {
+    const v = validateFile(file)
+    if (!v.ok) rejected.push({ file, reason: v.reason })
+    else if (accepted.length < limit) accepted.push(file)
+  }
+  return { accepted, rejected }
+}
+
 export function fitWithin(w: number, h: number, max: number) {
   const longest = Math.max(w, h)
   if (longest <= max) return { width: w, height: h, scaled: false }
@@ -37,11 +49,16 @@ export async function loadImage(file: File, max = MAX_SIDE): Promise<LoadedImage
   const fit = fitWithin(from.width, from.height, max)
   let bitmap = probe
   if (fit.scaled) {
-    bitmap = await createImageBitmap(file, {
-      resizeWidth: fit.width,
-      resizeHeight: fit.height,
-      resizeQuality: 'high',
-    })
+    try {
+      bitmap = await createImageBitmap(file, {
+        resizeWidth: fit.width,
+        resizeHeight: fit.height,
+        resizeQuality: 'high',
+      })
+    } catch (e) {
+      probe.close()
+      throw e
+    }
     probe.close()
   }
   return {
