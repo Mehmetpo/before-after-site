@@ -1,7 +1,7 @@
 import { useEffect, useRef, type CSSProperties, type RefObject, type Dispatch, type PointerEvent, type TouchEvent } from 'react'
 import type { Action, CompareState } from '@/lib/compare-state'
 import { filterString } from '@/lib/filters'
-import { clampPan, cssTransform } from '@/lib/transform'
+import { boxAspect, clampPan, contentAspect, cssTransform } from '@/lib/transform'
 import { CompareReveal } from '@/components/ui/compare-reveal'
 
 const imgFit = 'h-full w-full object-contain'
@@ -104,10 +104,15 @@ export function Viewer({
     if (e.touches.length < 2) touch.current = null
   }
 
+  const quarter = view.rotation === 90 || view.rotation === 270
+  const ca = contentAspect(mode, before.width, before.height)
   const wrapper: CSSProperties = {
-    transform: cssTransform(view),
+    transform: quarter ? `translate(-50%, -50%) ${cssTransform(view)}` : cssTransform(view),
     filter: filterString(adjust),
     transformOrigin: 'center',
+    // At quarter turns the box is height/width; lay the content out at its pre-rotation size
+    // (swapped box dimensions) so the rotated content exactly fills the box (contain).
+    ...(quarter ? { position: 'absolute', left: '50%', top: '50%', width: `${ca * 100}%`, height: `${100 / ca}%` } : null),
   }
   const aspect: CSSProperties = { aspectRatio: `${before.width} / ${before.height}` }
 
@@ -115,7 +120,10 @@ export function Viewer({
     <div
       ref={boxRef}
       className="relative overflow-hidden rounded-xl border"
-      style={{ touchAction: view.zoom > 1 ? 'none' : undefined }}
+      style={{
+        touchAction: view.zoom > 1 ? 'none' : undefined,
+        aspectRatio: quarter ? String(boxAspect(mode, before.width, before.height, view.rotation)) : undefined,
+      }}
       data-testid="viewer"
       data-mode={mode}
       onPointerEnter={() => (hover.current = true)}

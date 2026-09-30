@@ -1,3 +1,5 @@
+import type { Mode } from '@/lib/compare-state'
+
 export interface View {
   zoom: number
   panX: number
@@ -17,6 +19,17 @@ export function clampPan(v: View, box: { w: number; h: number }): View {
     panX: Math.min(maxX, Math.max(-maxX, v.panX)),
     panY: Math.min(maxY, Math.max(-maxY, v.panY)),
   }
+}
+
+/** Width / height of the unrotated compared content (side mode shows two images). */
+export function contentAspect(mode: Mode, w: number, h: number): number {
+  return (mode === 'side' ? 2 * w : w) / h
+}
+
+/** Width / height of the viewer box: inverted at 90/270 degrees, matching the exported canvas. */
+export function boxAspect(mode: Mode, w: number, h: number, rotation: View['rotation']): number {
+  const a = contentAspect(mode, w, h)
+  return rotation === 90 || rotation === 270 ? 1 / a : a
 }
 
 export function zoomBy(v: View, factor: number): View {

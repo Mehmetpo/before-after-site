@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  DEFAULT_VIEW, MAX_ZOOM, MIN_ZOOM, clampPan, cssTransform, rotateBy, zoomBy,
+  DEFAULT_VIEW, MAX_ZOOM, MIN_ZOOM, boxAspect, clampPan, contentAspect, cssTransform, rotateBy, zoomBy,
 } from '@/lib/transform'
 
 describe('transform', () => {
@@ -28,5 +28,19 @@ describe('transform', () => {
     expect(cssTransform({ zoom: 2, panX: 10, panY: 5, rotation: 90 })).toBe(
       'translate(10px, 5px) rotate(90deg) scale(2)',
     )
+  })
+})
+
+describe('viewer aspect', () => {
+  it('uses width/height of the content at 0 and 180 degrees', () => {
+    expect(contentAspect('slider', 800, 600)).toBeCloseTo(4 / 3)
+    expect(boxAspect('slider', 800, 600, 180)).toBeCloseTo(4 / 3)
+  })
+  it('doubles the content width in side mode', () => {
+    expect(contentAspect('side', 800, 600)).toBeCloseTo(8 / 3)
+  })
+  it('inverts the box aspect at quarter turns', () => {
+    expect(boxAspect('fade', 800, 600, 90)).toBeCloseTo(3 / 4)
+    expect(boxAspect('side', 800, 600, 270)).toBeCloseTo(3 / 8)
   })
 })
