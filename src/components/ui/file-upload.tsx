@@ -35,6 +35,8 @@ type FileUploadProps = {
   className?: string;
   description?: string;
   draggingLabel?: string;
+  /** When false, `accept` only limits the file picker; dropped files reach onFilesAccepted unfiltered. */
+  filterByAccept?: boolean;
   multiple?: boolean;
   showBorderBeam?: boolean;
   showFileList?: boolean;
@@ -164,6 +166,7 @@ export function FileUpload({
   className,
   description = "PDF, DOC/DOCX, XLSX, CSV, PNG, or JPG",
   draggingLabel = "Drop to add",
+  filterByAccept = true,
   multiple = true,
   showBorderBeam = true,
   showFileList = true,
@@ -182,7 +185,7 @@ export function FileUpload({
   const commitFiles = React.useCallback(
     (nextFiles: FileList | File[]) => {
       const acceptedFiles = Array.from(nextFiles)
-        .filter((file) => matchesAccept(file, accept))
+        .filter((file) => !filterByAccept || matchesAccept(file, accept))
         .slice(0, multiple ? undefined : 1);
 
       if (acceptedFiles.length === 0) {
@@ -200,7 +203,7 @@ export function FileUpload({
       });
       onFilesChange?.(items);
     },
-    [accept, multiple, onFilesAccepted, onFilesChange],
+    [accept, filterByAccept, multiple, onFilesAccepted, onFilesChange],
   );
 
   React.useEffect(() => {

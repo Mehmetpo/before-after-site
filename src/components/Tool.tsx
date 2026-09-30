@@ -44,6 +44,8 @@ export function Tool() {
           accept={IMAGE_ACCEPT}
           acceptedFileTypes={UPLOAD_ICONS}
           multiple
+          // Let unsupported files (e.g. HEIC) reach validateFile so it can explain why.
+          filterByAccept={false}
           showFileList={false}
           title={`Drop ${missing} here, or click to upload`}
           description="PNG, JPG, WebP, GIF or AVIF. You can also paste from the clipboard."
