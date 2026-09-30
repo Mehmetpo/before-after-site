@@ -3,16 +3,17 @@ import { Slider } from '@/components/ui/slider'
 import { Pattern as EditToolbar } from '@/components/ui/v-toolbar-3'
 import type { Action, CompareState } from '@/lib/compare-state'
 
-interface SliderRowProps {
+export interface SliderRowProps {
   label: string
   value: number
   min: number
   max: number
+  step?: number
   unit?: string
   onChange: (value: number) => void
 }
 
-function SliderRow({ label, value, min, max, unit = '%', onChange }: SliderRowProps) {
+export function SliderRow({ label, value, min, max, step = 1, unit = '%', onChange }: SliderRowProps) {
   const id = useId()
   return (
     <div className="flex min-w-44 flex-1 flex-col gap-2">
@@ -27,7 +28,7 @@ function SliderRow({ label, value, min, max, unit = '%', onChange }: SliderRowPr
         aria-labelledby={id}
         min={min}
         max={max}
-        step={1}
+        step={step}
         value={[value]}
         onValueChange={([v]) => onChange(v)}
       />

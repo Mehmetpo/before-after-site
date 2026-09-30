@@ -7,6 +7,8 @@ export interface LoadedImage {
   url: string
   width: number
   height: number
+  /** Set when the image was loaded from a public link, so the comparison can be shared as a link. */
+  sourceUrl?: string
   resizedFrom?: { width: number; height: number }
 }
 

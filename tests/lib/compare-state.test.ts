@@ -54,3 +54,35 @@ describe('compare-state reducer', () => {
     expect(s.mode).toBe('fade')
   })
 })
+
+describe('enhance mode', () => {
+  it('starts with one image as before and turns enhance mode on', () => {
+    const s = reducer(initialState, { type: 'enhanceStart', image: img('a') })
+    expect(s.before?.name).toBe('a')
+    expect(s.after).toBeNull()
+    expect(s.enhanceMode).toBe(true)
+  })
+  it('clamps enhance values and can reset them', () => {
+    const start = reducer(initialState, { type: 'enhanceStart', image: img('a') })
+    let s = reducer(start, { type: 'enhanceSet', key: 'exposure', value: 9 })
+    expect(s.enhance.exposure).toBe(2)
+    s = reducer(s, { type: 'enhanceSet', key: 'sharpen', value: 40 })
+    s = reducer(s, { type: 'enhanceReset' })
+    expect(s.enhance).toEqual(initialState.enhance)
+  })
+  it('setAfter replaces only the after image', () => {
+    let s = reducer(initialState, { type: 'enhanceStart', image: img('a') })
+    s = reducer(s, { type: 'setAfter', image: img('b') })
+    expect(s.before?.name).toBe('a')
+    expect(s.after?.name).toBe('b')
+  })
+  it('uploading images or clearing leaves enhance mode', () => {
+    let s = reducer(initialState, { type: 'enhanceStart', image: img('a') })
+    s = reducer(s, { type: 'images', images: [img('x'), img('y')] })
+    expect(s.enhanceMode).toBe(false)
+    s = reducer(s, { type: 'enhanceStart', image: img('a') })
+    s = reducer(s, { type: 'clear' })
+    expect(s.enhanceMode).toBe(false)
+    expect(s.enhance).toEqual(initialState.enhance)
+  })
+})

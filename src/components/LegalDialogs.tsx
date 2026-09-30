@@ -4,7 +4,7 @@ import { LEGAL_LINKS, type LegalPage } from '@/lib/legal'
 const COPY: Record<LegalPage, { title: string; body: string[] }> = {
   about: {
     title: 'About',
-    body: ['Before & After Pro compares two images in your browser. Nothing is uploaded.'],
+    body: ['Before & After Pro compares two images in your browser. Files you add are never uploaded, and enhancement, similarity and GIF export all run locally. If you load images from links, your browser fetches them directly from the image host, which can see that request.'],
   },
   terms: {
     title: 'Terms',

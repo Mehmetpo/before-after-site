@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { toast } from 'sonner'
+import { ENHANCE_MAX_SIDE } from '@/hooks/useEnhance'
+import { fetchImageFile } from '@/lib/share'
 import { trackEvent } from '@/lib/analytics'
 import { initialState, reducer } from '@/lib/compare-state'
 import { disposeImage, loadImage, selectFiles, type LoadedImage } from '@/lib/image-load'
@@ -43,6 +45,46 @@ export function useCompareState() {
     [loadBatch],
   )
 
+  const loadUrls = useCallback((a: string, b: string) => {
+    const next = queue.current.then(async () => {
+      try {
+        const [fa, fb] = await Promise.all([fetchImageFile(a), fetchImageFile(b)])
+        const [ia, ib] = await Promise.all([loadImage(fa), loadImage(fb)])
+        ia.sourceUrl = a
+        ib.sourceUrl = b
+        dispatch({ type: 'images', images: [ia, ib] })
+        trackEvent('images_added', { count: 2 })
+      } catch (e) {
+        toast.error('Could not load the links', {
+          description: e instanceof Error ? e.message : 'Check that both links are public image URLs.',
+        })
+      }
+    })
+    queue.current = next.catch(() => {})
+    return next
+  }, [])
+
+  const startEnhance = useCallback(
+    (files: File[]) => {
+      const next = queue.current.then(async () => {
+        const { accepted, rejected } = selectFiles(files, 1)
+        for (const { file, reason } of rejected) toast.error(file.name, { description: reason })
+        const [file] = accepted
+        if (!file) return
+        try {
+          const img = await loadImage(file, ENHANCE_MAX_SIDE)
+          dispatch({ type: 'enhanceStart', image: img })
+          trackEvent('images_added', { count: 1 })
+        } catch {
+          toast.error(file.name, { description: 'This file could not be decoded as an image.' })
+        }
+      })
+      queue.current = next.catch(() => {})
+      return next
+    },
+    [],
+  )
+
   // Dispose replaced images so bitmaps and object URLs do not leak.
   useEffect(() => {
     const current = [state.before, state.after].filter(Boolean) as LoadedImage[]
@@ -52,5 +94,5 @@ export function useCompareState() {
 
   useEffect(() => () => live.current.forEach(disposeImage), [])
 
-  return { state, dispatch, addFiles }
+  return { state, dispatch, addFiles, startEnhance, loadUrls }
 }

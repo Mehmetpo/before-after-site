@@ -5,7 +5,7 @@ import { SAMPLE_PAIRS, sampleUrl } from '@/lib/samples'
 
 const CARDS: PanoramicCard[] = SAMPLE_PAIRS.map((p) => ({
   key: p.slug,
-  caption: p.title,
+  caption: `Example: ${p.title}`,
   content: (
     <CompareReveal
       before={{ src: sampleUrl(p.slug, 'before'), alt: `${p.title} example, ${p.beforeLabel} version (photo: ${p.photographer})` }}
@@ -30,7 +30,7 @@ export function Hero() {
           <span className="sr-only"> Free online before and after image slider.</span>
         </>
       }
-      description="Compare two images in seconds. Free, private, in your browser."
+      description="Compare any two images, such as photos, edits, designs or screenshots, in seconds. Free, private, in your browser. The cards below are example comparisons."
       action={
         <Button size="lg" onClick={scrollToTool}>
           Try it now
