@@ -10,6 +10,11 @@ function isEditable(t: EventTarget | null) {
   return t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))
 }
 
+/** True when the event comes from inside an open modal dialog (e.g. the legal dialogs). */
+function inModal(t: EventTarget | null) {
+  return t instanceof Element && t.closest('[aria-modal="true"]') !== null
+}
+
 export function toggleFullscreen(el: HTMLElement | null) {
   if (document.fullscreenElement) void document.exitFullscreen()
   else void el?.requestFullscreen?.().catch(() => {})
@@ -30,7 +35,7 @@ export function useShortcuts(
   useEffect(() => {
     if (!ready) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || isEditable(e.target)) return
+      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || isEditable(e.target) || inModal(e.target)) return
       const { mode, sliderPct } = latest.current
       if (e.key >= '1' && e.key <= '4') {
         dispatch({ type: 'mode', mode: MODES[Number(e.key) - 1] })
