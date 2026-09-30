@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { initialState, type CompareState } from '@/lib/compare-state'
-import { planExport } from '@/lib/render'
+import { MAX_EXPORT_PIXELS, capSize, planExport } from '@/lib/render'
 
 const img = (w: number, h: number) => ({ width: w, height: h }) as never
 const base = (over: Partial<CompareState> = {}): CompareState => ({
@@ -80,5 +80,30 @@ describe('planExport pan units', () => {
   })
   it('ignores pan for combined exports', () => {
     expect(planExport(base({ view }), 'combined', { w: 400, h: 300 })!.panX).toBe(0)
+  })
+})
+
+describe('canvas area cap', () => {
+  it('leaves small plans untouched', () => {
+    const p = planExport(base(), 'combined')!
+    expect(p.scale).toBe(1)
+    expect(p.width).toBe(1600)
+  })
+  it('scales oversized combined plans under the pixel cap, keeping aspect', () => {
+    const p = planExport(base({ before: img(4096, 4096), after: img(4096, 4096) }), 'combined')!
+    expect(p.width * p.height).toBeLessThanOrEqual(MAX_EXPORT_PIXELS)
+    expect(p.scale).toBeLessThan(1)
+    expect(p.width / p.height).toBeCloseTo(2, 1)
+  })
+  it('scales pan with the plan', () => {
+    const view = { zoom: 2, panX: 10, panY: 0, rotation: 0 as const }
+    const p = planExport(base({ before: img(4096, 4096), after: img(4096, 4096), mode: 'side', view }), 'snapshot', { w: 8192, h: 4096 })!
+    expect(p.panX).toBeCloseTo(10 * p.scale)
+  })
+  it('capSize keeps the area at or under the max', () => {
+    const c = capSize(10000, 5000, 1_000_000)
+    expect(c.width * c.height).toBeLessThanOrEqual(1_000_000)
+    expect(c.scale).toBeCloseTo(Math.sqrt(1_000_000 / 50_000_000), 2)
+    expect(capSize(100, 100, 1_000_000)).toEqual({ width: 100, height: 100, scale: 1 })
   })
 })

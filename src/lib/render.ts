@@ -19,6 +19,8 @@ export interface ExportPlan {
   layers: Layer[]
   filter: string
   rotation: 0 | 90 | 180 | 270
+  /** Uniform scale applied on top of zoom so the canvas stays under the pixel cap. */
+  scale: number
   zoom: number
   panX: number
   panY: number
@@ -30,6 +32,23 @@ export interface ExportPlan {
 function fit(srcW: number, srcH: number, cellW: number, cellH: number) {
   const k = Math.min(cellW / srcW, cellH / srcH)
   return { w: Math.round(srcW * k), h: Math.round(srcH * k) }
+}
+
+/** Combined canvas area cap (~16.7 megapixels, the safe limit for most browsers). */
+export const MAX_EXPORT_PIXELS = 4096 * 4096
+
+/** Scales width/height down proportionally so the area stays within maxPixels. */
+export function capSize(width: number, height: number, maxPixels = MAX_EXPORT_PIXELS) {
+  if (width * height <= maxPixels) return { width, height, scale: 1 }
+  let scale = Math.sqrt(maxPixels / (width * height))
+  let w = Math.max(1, Math.floor(width * scale))
+  let h = Math.max(1, Math.floor(height * scale))
+  while (w * h > maxPixels) {
+    scale *= 0.999
+    w = Math.max(1, Math.floor(width * scale))
+    h = Math.max(1, Math.floor(height * scale))
+  }
+  return { width: w, height: h, scale }
 }
 
 /** Viewer box size in CSS px; view pan is expressed in these units. */
@@ -73,17 +92,19 @@ export function planExport(s: CompareState, kind: ExportKind, box?: BoxSize): Ex
   const width = quarter ? contentH : contentW
   const height = quarter ? contentW : contentH
   // Pan is CSS px in the viewer box; the box shows the whole output, so scale by output/box.
+  const cap = capSize(width, height)
   const kx = box && box.w > 0 ? width / box.w : 1
   const ky = box && box.h > 0 ? height / box.h : 1
   return {
-    width,
-    height,
+    width: cap.width,
+    height: cap.height,
+    scale: cap.scale,
     layers,
     filter: filterString(s.adjust),
     rotation: s.view.rotation,
     zoom: kind === 'snapshot' ? s.view.zoom : 1,
-    panX: kind === 'snapshot' ? s.view.panX * kx : 0,
-    panY: kind === 'snapshot' ? s.view.panY * ky : 0,
+    panX: kind === 'snapshot' ? s.view.panX * kx * cap.scale : 0,
+    panY: kind === 'snapshot' ? s.view.panY * ky * cap.scale : 0,
     contentW,
     contentH,
   }
@@ -98,7 +119,7 @@ export function drawPlan(
   ctx.filter = plan.filter
   ctx.translate(plan.width / 2 + plan.panX, plan.height / 2 + plan.panY)
   ctx.rotate((plan.rotation * Math.PI) / 180)
-  ctx.scale(plan.zoom, plan.zoom)
+  ctx.scale(plan.zoom * plan.scale, plan.zoom * plan.scale)
   ctx.translate(-plan.contentW / 2, -plan.contentH / 2)
   for (const l of plan.layers) {
     ctx.save()
@@ -121,7 +142,7 @@ export function renderToCanvas(s: CompareState, kind: ExportKind, box?: BoxSize)
   canvas.width = plan.width
   canvas.height = plan.height
   const ctx = canvas.getContext('2d')
-  if (!ctx) return null
+  if (!ctx) throw new Error('Your browser could not create a drawing surface for this image. Try a smaller image.')
   drawPlan(ctx, plan, { before: s.before.bitmap, after: s.after.bitmap })
   return canvas
 }

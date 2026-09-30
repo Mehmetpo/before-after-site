@@ -67,7 +67,14 @@ export function ExportBar({
         return
       }
       setProgress(60)
-      const blob = await canvasToBlob(canvas, state.format, state.quality)
+      let blob: Blob
+      try {
+        blob = await canvasToBlob(canvas, state.format, state.quality)
+      } finally {
+        // Release the backing store now rather than waiting for GC.
+        canvas.width = 0
+        canvas.height = 0
+      }
       setProgress(100)
       downloadBlob(blob, buildFilename(kind, state.format))
       later(250, () => setStatus('downloaded'))
