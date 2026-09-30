@@ -1,4 +1,4 @@
-import { CopySimple, FilmStrip, X } from '@phosphor-icons/react'
+import { CopySimple, FilmStrip, LinkSimple, X } from '@phosphor-icons/react'
 import { useRef, useState, type RefObject } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,7 @@ import { trackEvent } from '@/lib/analytics'
 import { downloadBlob } from '@/lib/export'
 import { encodeSweepGif } from '@/lib/gif-export'
 import { renderToCanvas } from '@/lib/render'
+import { buildShareUrl } from '@/lib/share'
 
 const LENGTHS = [2, 4, 6]
 
@@ -33,6 +34,18 @@ export function ShareBar({ state, boxRef }: { state: CompareState; boxRef: RefOb
       trackEvent('share', { kind: 'copy' })
     } catch {
       toast.error('Could not copy the image', { description: 'Your browser may block image copying. Use Snapshot to download it instead.' })
+    }
+  }
+
+  const shareLink = state.before?.sourceUrl && state.after?.sourceUrl ? buildShareUrl(window.location.origin, state.before.sourceUrl, state.after.sourceUrl) : null
+  const copyLink = async () => {
+    if (!shareLink) return
+    try {
+      await navigator.clipboard.writeText(shareLink)
+      toast.success('Share link copied')
+      trackEvent('share', { kind: 'link' })
+    } catch {
+      toast.error('Copy failed. Select the link and copy it manually.')
     }
   }
 
@@ -63,6 +76,12 @@ export function ShareBar({ state, boxRef }: { state: CompareState; boxRef: RefOb
         <CopySimple />
         Copy image
       </Button>
+      {shareLink && (
+        <Button variant="outline" size="sm" onClick={() => void copyLink()} disabled={busy}>
+          <LinkSimple />
+          Copy share link
+        </Button>
+      )}
       <div className="flex flex-col gap-2">
         <span id="gif-length-label" className="text-xs text-muted-foreground">
           GIF length
