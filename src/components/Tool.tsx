@@ -31,6 +31,7 @@ export function Tool() {
   const { state, dispatch, addFiles } = useCompareState()
   usePasteImages(addFiles)
   const viewerRef = useRef<HTMLDivElement>(null)
+  const boxRef = useRef<HTMLDivElement>(null)
   useShortcuts(state, dispatch, viewerRef)
 
   const ready = Boolean(state.before && state.after)
@@ -78,9 +79,9 @@ export function Tool() {
           </div>
           <Toolbar state={state} dispatch={dispatch} />
           <div ref={viewerRef} className="bg-background">
-            <Viewer state={state} dispatch={dispatch} />
+            <Viewer state={state} dispatch={dispatch} boxRef={boxRef} />
           </div>
-          <ExportBar state={state} dispatch={dispatch} />
+          <ExportBar state={state} dispatch={dispatch} boxRef={boxRef} />
           <p className="text-sm text-muted-foreground">
             Shortcuts: 1-4 modes, ←/→ slider, +/- zoom, R rotate, F fullscreen
           </p>

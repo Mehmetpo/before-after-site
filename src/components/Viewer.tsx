@@ -1,4 +1,4 @@
-import { useEffect, useRef, type CSSProperties, type Dispatch, type PointerEvent, type TouchEvent } from 'react'
+import { useEffect, useRef, type CSSProperties, type RefObject, type Dispatch, type PointerEvent, type TouchEvent } from 'react'
 import type { Action, CompareState } from '@/lib/compare-state'
 import { filterString } from '@/lib/filters'
 import { clampPan, cssTransform } from '@/lib/transform'
@@ -6,9 +6,17 @@ import { CompareReveal } from '@/components/ui/compare-reveal'
 
 const imgFit = 'h-full w-full object-contain'
 
-export function Viewer({ state, dispatch }: { state: CompareState; dispatch: Dispatch<Action> }) {
+export function Viewer({
+  state,
+  dispatch,
+  boxRef,
+}: {
+  state: CompareState
+  dispatch: Dispatch<Action>
+  /** Ref to the viewer box, so callers can read its CSS pixel size (used to scale pan on export). */
+  boxRef: RefObject<HTMLDivElement | null>
+}) {
   const { before, after, mode, view, adjust } = state
-  const boxRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef(view)
   useEffect(() => {
     viewRef.current = view

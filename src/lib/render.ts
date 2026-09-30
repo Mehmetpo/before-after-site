@@ -32,7 +32,13 @@ function fit(srcW: number, srcH: number, cellW: number, cellH: number) {
   return { w: Math.round(srcW * k), h: Math.round(srcH * k) }
 }
 
-export function planExport(s: CompareState, kind: ExportKind): ExportPlan | null {
+/** Viewer box size in CSS px; view pan is expressed in these units. */
+export interface BoxSize {
+  w: number
+  h: number
+}
+
+export function planExport(s: CompareState, kind: ExportKind, box?: BoxSize): ExportPlan | null {
   if (!s.before || !s.after) return null
   const cw = s.before.width
   const ch = s.before.height
@@ -64,15 +70,20 @@ export function planExport(s: CompareState, kind: ExportKind): ExportPlan | null
   }
 
   const quarter = s.view.rotation === 90 || s.view.rotation === 270
+  const width = quarter ? contentH : contentW
+  const height = quarter ? contentW : contentH
+  // Pan is CSS px in the viewer box; the box shows the whole output, so scale by output/box.
+  const kx = box && box.w > 0 ? width / box.w : 1
+  const ky = box && box.h > 0 ? height / box.h : 1
   return {
-    width: quarter ? contentH : contentW,
-    height: quarter ? contentW : contentH,
+    width,
+    height,
     layers,
     filter: filterString(s.adjust),
     rotation: s.view.rotation,
     zoom: kind === 'snapshot' ? s.view.zoom : 1,
-    panX: kind === 'snapshot' ? s.view.panX : 0,
-    panY: kind === 'snapshot' ? s.view.panY : 0,
+    panX: kind === 'snapshot' ? s.view.panX * kx : 0,
+    panY: kind === 'snapshot' ? s.view.panY * ky : 0,
     contentW,
     contentH,
   }
@@ -103,8 +114,8 @@ export function drawPlan(
   ctx.restore()
 }
 
-export function renderToCanvas(s: CompareState, kind: ExportKind): HTMLCanvasElement | null {
-  const plan = planExport(s, kind)
+export function renderToCanvas(s: CompareState, kind: ExportKind, box?: BoxSize): HTMLCanvasElement | null {
+  const plan = planExport(s, kind, box)
   if (!plan || !s.before || !s.after) return null
   const canvas = document.createElement('canvas')
   canvas.width = plan.width

@@ -53,3 +53,32 @@ describe('planExport', () => {
     expect(planExport(s, 'combined')!.filter).toBe(planExport(s, 'snapshot')!.filter)
   })
 })
+
+describe('planExport pan units', () => {
+  const view = { zoom: 2, panX: 50, panY: -20, rotation: 0 as const }
+  it('scales CSS-px pan by content size over viewer box size', () => {
+    // 800x600 content shown in a 400x300 box: 1 CSS px = 2 canvas px.
+    const p = planExport(base({ mode: 'fade', view }), 'snapshot', { w: 400, h: 300 })!
+    expect(p.panX).toBeCloseTo(100)
+    expect(p.panY).toBeCloseTo(-40)
+  })
+  it('scales pan in side mode using the doubled content width', () => {
+    // 1600x600 output shown in an 800x300 box: factor 2 on both axes.
+    const p = planExport(base({ mode: 'side', view }), 'snapshot', { w: 800, h: 300 })!
+    expect(p.panX).toBeCloseTo(100)
+    expect(p.panY).toBeCloseTo(-40)
+  })
+  it('uses output (post-rotation) dimensions for the scale at quarter turns', () => {
+    // 90deg: output is 600x800; box is 300x400 -> factor 2.
+    const p = planExport(base({ mode: 'fade', view: { ...view, rotation: 90 } }), 'snapshot', { w: 300, h: 400 })!
+    expect(p.panX).toBeCloseTo(100)
+    expect(p.panY).toBeCloseTo(-40)
+  })
+  it('keeps pan unscaled when no box is given', () => {
+    const p = planExport(base({ mode: 'fade', view }), 'snapshot')!
+    expect(p.panX).toBe(50)
+  })
+  it('ignores pan for combined exports', () => {
+    expect(planExport(base({ view }), 'combined', { w: 400, h: 300 })!.panX).toBe(0)
+  })
+})

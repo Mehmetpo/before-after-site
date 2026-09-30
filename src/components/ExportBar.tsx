@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type Dispatch } from 'react'
+import { useEffect, useRef, useState, type Dispatch, type RefObject } from 'react'
 import { toast } from 'sonner'
 import DownloadButton from '@/components/ui/button-download'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -22,7 +22,15 @@ const nextFrame = () =>
     setTimeout(r, 50)
   })
 
-export function ExportBar({ state, dispatch }: { state: CompareState; dispatch: Dispatch<Action> }) {
+export function ExportBar({
+  state,
+  dispatch,
+  boxRef,
+}: {
+  state: CompareState
+  dispatch: Dispatch<Action>
+  boxRef: RefObject<HTMLElement | null>
+}) {
   const [busy, setBusy] = useState<ExportKind | null>(null)
   const [status, setStatus] = useState<Status>('idle')
   const [progress, setProgress] = useState(0)
@@ -48,7 +56,11 @@ export function ExportBar({ state, dispatch }: { state: CompareState; dispatch: 
     // Let the button paint its progress state before the synchronous canvas work.
     await nextFrame()
     try {
-      const canvas = renderToCanvas(state, kind)
+      const canvas = renderToCanvas(
+        state,
+        kind,
+        boxRef.current ? { w: boxRef.current.clientWidth, h: boxRef.current.clientHeight } : undefined,
+      )
       if (!canvas) {
         reset()
         toast.error('Add both images first.')
