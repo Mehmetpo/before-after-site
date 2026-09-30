@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { toast } from 'sonner'
 import { initialState, reducer } from '@/lib/compare-state'
-import { disposeImage, loadImage, validateFile, type LoadedImage } from '@/lib/image-load'
+import { disposeImage, loadImage, selectFiles, type LoadedImage } from '@/lib/image-load'
 
 export function useCompareState() {
   const [state, dispatch] = useReducer(reducer, initialState)
   const live = useRef<LoadedImage[]>([])
+  // Batches are applied in call order even if a later batch finishes decoding first,
+  // so before/after can never swap.
+  const queue = useRef<Promise<void>>(Promise.resolve())
 
-  const addFiles = useCallback(async (files: File[]) => {
+  const loadBatch = useCallback(async (files: File[]) => {
+    const { accepted, rejected } = selectFiles(files)
+    for (const { file, reason } of rejected) toast.error(file.name, { description: reason })
     const loaded: LoadedImage[] = []
-    for (const file of files.slice(0, 2)) {
-      const v = validateFile(file)
-      if (!v.ok) {
-        toast.error(file.name, { description: v.reason })
-        continue
-      }
+    for (const file of accepted) {
       try {
         const img = await loadImage(file)
         if (img.resizedFrom) {
@@ -29,6 +29,15 @@ export function useCompareState() {
     }
     if (loaded.length) dispatch({ type: 'images', images: loaded })
   }, [])
+
+  const addFiles = useCallback(
+    (files: File[]) => {
+      const next = queue.current.then(() => loadBatch(files))
+      queue.current = next.catch(() => {})
+      return next
+    },
+    [loadBatch],
+  )
 
   // Dispose replaced images so bitmaps and object URLs do not leak.
   useEffect(() => {
