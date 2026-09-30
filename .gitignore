@@ -1,1 +1,6 @@
 .vercel
+node_modules
+dist
+public/samples/raw/
+*.local
+raw/
