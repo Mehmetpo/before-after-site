@@ -8,8 +8,8 @@ const CARDS: PanoramicCard[] = SAMPLE_PAIRS.map((p) => ({
   caption: p.title,
   content: (
     <CompareReveal
-      before={{ src: sampleUrl(p.slug, 'before'), alt: `${p.title}, ${p.beforeLabel}` }}
-      after={{ src: sampleUrl(p.slug, 'after'), alt: `${p.title}, ${p.afterLabel}` }}
+      before={{ src: sampleUrl(p.slug, 'before'), alt: `${p.title} example, ${p.beforeLabel} version (photo: ${p.photographer})` }}
+      after={{ src: sampleUrl(p.slug, 'after'), alt: `${p.title} example, ${p.afterLabel} version (photo: ${p.photographer})` }}
       labels={[p.beforeLabel, p.afterLabel]}
       aria-label={`${p.title}: ${p.beforeLabel} versus ${p.afterLabel}`}
       introSweep

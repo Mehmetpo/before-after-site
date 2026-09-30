@@ -1,14 +1,24 @@
 # Sample image credits
 
-All images are NASA Earth Observatory / USGS Landsat / MODIS imagery (US government work, public domain). Credit: NASA Earth Observatory.
+The hero samples are built from six photos published on Unsplash under the
+[Unsplash License](https://unsplash.com/license) (free for commercial and non-commercial use, no permission needed).
 
-| Pair | Before | After | Source |
-|---|---|---|---|
-| neworleans | 2005-08-27 | 2005-08-30 | https://science.nasa.gov/earth/earth-observatory/flooding-in-new-orleans-5806/ (courtesy Jeff Schmaltz, MODIS Land Rapid Response Team, NASA GSFC) |
-| vegas | 1984-10-22 | 2009-01-12 | https://science.nasa.gov/earth/earth-observatory/25-years-of-growth-in-las-vegas-37228 |
-| hobet | 2000-10-15 | 2010-08-08 | https://science.nasa.gov/earth/earth-observatory/world-of-change/hobet/ |
-| aral | 2000-08-25 | 2009-08-16 | https://science.nasa.gov/earth/earth-observatory/world-of-change/aral-sea/ |
-| dubai | 2000-11-11 | 2011-04-25 | https://science.nasa.gov/earth/earth-observatory/world-of-change/dubai/ |
-| columbia | 1986 | 2024-08-05 | https://science.nasa.gov/earth/earth-observatory/world-of-change/columbia-glacier/ |
-| powell | 1999-03-25 | 2021 | https://science.nasa.gov/earth/earth-observatory/world-of-change/lake-powell/ |
-| amazon | 2000-07-30 | 2012-07-18 | https://science.nasa.gov/earth/earth-observatory/world-of-change/amazon-deforestation/ |
+| Source file (`raw/`) | Photographer | Photo page | License | Used for |
+|---|---|---|---|---|
+| `_joB4Z4XScU.jpg` | Natalie Sierra | https://unsplash.com/photos/_joB4Z4XScU | Unsplash License | colorize |
+| `EKIyHUrUHWU.jpg` | Adriel Kloppenburg | https://unsplash.com/photos/EKIyHUrUHWU | Unsplash License | mood |
+| `5wDq-27_zKI.jpg` | Uran Wang | https://unsplash.com/photos/5wDq-27_zKI | Unsplash License | upscale, denoise |
+| `Dmhjy9fDTKw.jpg` | Metin Ozer | https://unsplash.com/photos/Dmhjy9fDTKw | Unsplash License | grade |
+| `VrKCuFTGOBI.jpg` | Luca Iaconelli | https://unsplash.com/photos/VrKCuFTGOBI | Unsplash License | sharpen, exposure |
+| `N4C2DMEpWxo.jpg` | Eric Carlson | https://unsplash.com/photos/N4C2DMEpWxo | Unsplash License | hdr |
+
+## How the pairs are made
+
+Each `<slug>-before.webp` / `<slug>-after.webp` pair is generated from a single original photo by
+`scripts/make-samples.mjs` (sharp): the photo is cropped to 1600x1200 and the "before" and "after"
+variants are produced with synthetic edits (grayscale, flat grade, blur, pixelation, overexposure,
+added noise, color grading, local contrast). The "before" images are artificially degraded for
+demonstration; they do not represent the photographers' work.
+
+To regenerate: download each photo from its page (`https://unsplash.com/photos/<id>/download`)
+into `raw/<id>.jpg`, then run `node scripts/make-samples.mjs`.

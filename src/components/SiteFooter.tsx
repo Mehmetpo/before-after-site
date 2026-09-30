@@ -24,7 +24,10 @@ export function SiteFooter() {
             ))}
           </nav>
           <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-            <p>Sample imagery: NASA Earth Observatory / USGS Landsat (public domain)</p>
+            <p>
+              Sample photos: Natalie Sierra, Adriel Kloppenburg, Uran Wang, Metin Ozer, Luca Iaconelli and Eric Carlson
+              via Unsplash. Before/after variants generated for demonstration.
+            </p>
             <p>&copy; {year} Before &amp; After Pro</p>
           </div>
         </div>
