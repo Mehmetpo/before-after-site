@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useTransform } from "motion/react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/lib/theme";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
