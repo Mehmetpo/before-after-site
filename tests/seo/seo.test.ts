@@ -62,3 +62,26 @@ describe('crawler files', () => {
     expect(buf.readUInt32BE(20)).toBe(630)
   })
 })
+
+describe('embed page', () => {
+  it('is noindex and kept out of the sitemap', () => {
+    expect(read('embed.html')).toMatch(/<meta name="robots" content="noindex/)
+    expect(read('public/sitemap.xml')).not.toContain('/embed')
+    expect(read('public/robots.txt')).not.toMatch(/Disallow:\s*\/embed/)
+  })
+
+  it('vercel.json frames /embed everywhere and the rest of the site only on itself', () => {
+    const { headers } = JSON.parse(read('vercel.json')) as {
+      headers: { source: string; headers: { key: string; value: string }[] }[]
+    }
+    const csp = (h: (typeof headers)[number]) => h.headers.find((x) => x.key === 'Content-Security-Policy')?.value
+    const embed = headers.find((h) => h.source === '/embed')!
+    expect(csp(embed)).toBe('frame-ancestors *')
+    expect(embed.headers.some((x) => x.key === 'X-Frame-Options')).toBe(false)
+    const others = headers.filter((h) => h.source !== '/embed')
+    expect(others.length).toBeGreaterThan(0)
+    for (const h of others) expect(csp(h)).toBe("frame-ancestors 'self'")
+    // The catch-all excludes /embed via a negative lookahead.
+    expect(others.map((h) => h.source)).toEqual(['/', '/:path((?!embed$).+)'])
+  })
+})
