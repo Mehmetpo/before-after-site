@@ -63,7 +63,12 @@ export interface BoxSize {
   h: number
 }
 
-export function planExport(s: CompareState, kind: ExportKind, box?: BoxSize): ExportPlan | null {
+export interface PlanOptions {
+  /** Shrink the output so its longest side is at most this many pixels (never upscales). */
+  maxSide?: number
+}
+
+export function planExport(s: CompareState, kind: ExportKind, box?: BoxSize, opts: PlanOptions = {}): ExportPlan | null {
   if (!s.before || !s.after) return null
   const cw = s.before.width
   const ch = s.before.height
@@ -99,7 +104,10 @@ export function planExport(s: CompareState, kind: ExportKind, box?: BoxSize): Ex
   const width = quarter ? contentH : contentW
   const height = quarter ? contentW : contentH
   // Pan is CSS px in the viewer box; the box shows the whole output, so scale by output/box.
-  const cap = capSize(width, height)
+  const side = Math.max(width, height)
+  const k = opts.maxSide && side > opts.maxSide ? opts.maxSide / side : 1
+  const sized = capSize(Math.round(width * k), Math.round(height * k))
+  const cap = { ...sized, scale: sized.scale * k }
   const kx = box && box.w > 0 ? width / box.w : 1
   const ky = box && box.h > 0 ? height / box.h : 1
   return {
@@ -178,8 +186,13 @@ export function drawPlan(
   ctx.restore()
 }
 
-export function renderToCanvas(s: CompareState, kind: ExportKind, box?: BoxSize): HTMLCanvasElement | null {
-  const plan = planExport(s, kind, box)
+export function renderToCanvas(
+  s: CompareState,
+  kind: ExportKind,
+  box?: BoxSize,
+  opts?: PlanOptions,
+): HTMLCanvasElement | null {
+  const plan = planExport(s, kind, box, opts)
   if (!plan || !s.before || !s.after) return null
   const canvas = document.createElement('canvas')
   canvas.width = plan.width

@@ -10,6 +10,21 @@ const base = (over: Partial<CompareState> = {}): CompareState => ({
   ...over,
 })
 
+describe('planExport maxSide', () => {
+  it('shrinks the longest side to maxSide and scales pan/zoom consistently', () => {
+    const p = planExport(base({ mode: 'slider' }), 'snapshot', undefined, { maxSide: 400 })!
+    expect(Math.max(p.width, p.height)).toBe(400)
+    expect(p.width).toBe(400)
+    expect(p.height).toBe(300)
+    expect(p.scale).toBeCloseTo(0.5, 3)
+  })
+  it('does not upscale small content', () => {
+    const p = planExport(base(), 'snapshot', undefined, { maxSide: 5000 })!
+    expect(p.width).toBe(800)
+    expect(p.scale).toBe(1)
+  })
+})
+
 describe('planExport', () => {
   it('returns null without both images', () => {
     expect(planExport({ ...initialState }, 'snapshot')).toBeNull()

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import ExpandingTabs, { type ExpandingTab } from '@/components/ui/expanding-tabs'
 import { EnhancePanel } from '@/components/EnhancePanel'
 import { ExportBar } from '@/components/ExportBar'
+import { ShareBar } from '@/components/ShareBar'
 import { Toolbar } from '@/components/Toolbar'
 import { Viewer } from '@/components/Viewer'
 import { toggleFullscreen } from '@/hooks/useShortcuts'
@@ -59,6 +60,7 @@ export default function Workspace({
         <Viewer state={state} dispatch={dispatch} boxRef={boxRef} />
       </div>
       <ExportBar state={state} dispatch={dispatch} boxRef={boxRef} />
+      <ShareBar state={state} boxRef={boxRef} />
       <p className="text-sm text-muted-foreground">
         Shortcuts: 1-4 modes, ←/→ slider, +/- zoom, R rotate, F fullscreen
       </p>

@@ -6,6 +6,7 @@ interface Events {
   images_added: { count: number }
   compare_ready: Record<string, never>
   mode_change: { mode: Mode }
+  share: { kind: 'copy' | 'gif' | 'link' }
   export: { kind: 'combined' | 'snapshot'; format: Format }
 }
 
