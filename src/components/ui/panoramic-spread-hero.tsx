@@ -33,10 +33,6 @@ export interface PanoramicSpreadHeroProps {
 const generatePanoramicCards = (items: PanoramicCard[]) => {
   const total = items.length;
   const centerIndex = (total - 1) / 2;
-  // Cap the horizontal step so the outermost cards stay inside the viewport
-  // (vw budget = half the screen minus half a card) whatever the card count.
-  const desktopStep = centerIndex > 0 ? Math.min(18, 36 / centerIndex) : 18;
-  const mobileStep = centerIndex > 0 ? Math.min(16, 22 / centerIndex) : 16;
 
   return items.map((item, i) => {
     const offset = i - centerIndex;
@@ -50,14 +46,14 @@ const generatePanoramicCards = (items: PanoramicCard[]) => {
         // Increased stack offset slightly to accommodate larger cards
         stacked: { x: offset * 2, y: offset * -2, rotateZ: offset * 2.5, rotateY: 0, scale: 1 },
         // Increased spread (x from 13 to 18) for larger cards
-        panoramic: { x: offset * desktopStep, y: absOffset * 3, rotateZ: offset * 1.5, rotateY: offset * -12, scale: 1 - absOffset * 0.05 },
+        panoramic: { x: offset * 18, y: absOffset * 3, rotateZ: offset * 1.5, rotateY: offset * -12, scale: 1 - absOffset * 0.05 },
         // Significantly larger sizes. Margins are exactly -50% of w/h to maintain perfect center.
         size: { w: "22vw", h: "32vh", ml: "-11vw", mt: "-16vh" }
       },
       mobile: {
         stacked: { x: offset * 1.5, y: offset * -1.5, rotateZ: offset * 3, rotateY: 0, scale: 1 },
         // Tighter X spread and more aggressive Y dip for mobile portrait screens
-        panoramic: { x: offset * mobileStep, y: absOffset * 5, rotateZ: offset * 2, rotateY: offset * -15, scale: 1 - absOffset * 0.04 },
+        panoramic: { x: offset * 16, y: absOffset * 5, rotateZ: offset * 2, rotateY: offset * -15, scale: 1 - absOffset * 0.04 },
         // Significantly larger for mobile devices too
         size: { w: "46vw", h: "30vh", ml: "-23vw", mt: "-15vh" }
       },
