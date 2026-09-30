@@ -179,7 +179,7 @@ export default function PanoramicSpreadHero({
 
   // Typography starts lower and scales up into position as cards unspool
   // Moved up slightly more ("-22vh") to give the larger images breathing room
-  const textY = useTransform(progress, [0.2, 1], ["10vh", "-22vh"]);
+  const textY = useTransform(progress, [0.2, 1], ["10vh", "-34vh"]);
   const textScale = useTransform(progress, [0.2, 1], [0.85, 1]);
   const textOpacity = useTransform(progress, [0.4, 0.9], [0, 1]);
 
@@ -200,7 +200,7 @@ export default function PanoramicSpreadHero({
         {/* Scene Container - Reacts to pointer tilt for whole-gallery parallax */}
         <motion.div
           className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
-          style={{ rotateX: tiltX, rotateY: tiltY, transformStyle: "preserve-3d" }}
+          style={{ y: "9vh", rotateX: tiltX, rotateY: tiltY, transformStyle: "preserve-3d" }}
         >
           {CARDS.map((card, i) => (
             <GalleryCard
@@ -227,7 +227,7 @@ export default function PanoramicSpreadHero({
             {title}
           </h1>
           {description ? (
-            <p className="mt-6 max-w-[45ch] text-sm md:text-[1.1vw] font-light leading-relaxed opacity-70">
+            <p className="mt-6 max-w-[62ch] text-sm md:text-[1.1vw] font-light leading-relaxed opacity-70">
               {description}
             </p>
           ) : null}
