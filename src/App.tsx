@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/react'
 import { Hero } from '@/components/Hero'
 import { SiteFooter } from '@/components/SiteFooter'
 import { Tool } from '@/components/Tool'
@@ -13,6 +14,7 @@ export default function App() {
       </main>
       <SiteFooter />
       <StyledToaster />
+      <Analytics />
     </>
   )
 }

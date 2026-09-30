@@ -5,10 +5,64 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>try{var t=localStorage.getItem("theme");if(t==="dark"||((!t||t==="system")&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}</script>
-    <title>Before &amp; After Pro</title>
+
+    <title>Before and After Slider – Free Online Image Compare Tool</title>
+    <meta name="description" content="Free online before and after slider. Compare two images with a drag slider, fade or difference view, then export it. Private: nothing leaves your browser." />
+    <link rel="canonical" href="https://before-after-site-ten.vercel.app/" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Before &amp; After Pro" />
+    <meta property="og:title" content="Before and After Slider – Free Online Image Compare Tool" />
+    <meta property="og:description" content="Compare two images with a drag slider, side by side, fade or difference view. Free, private, and runs entirely in your browser." />
+    <meta property="og:url" content="https://before-after-site-ten.vercel.app/" />
+    <meta property="og:image" content="https://before-after-site-ten.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A landscape photo split by a slider: dull and grey on the left, vivid sunset colors on the right." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Before and After Slider – Free Online Image Compare Tool" />
+    <meta name="twitter:description" content="Compare two images with a drag slider. Free, private, and runs entirely in your browser." />
+    <meta name="twitter:image" content="https://before-after-site-ten.vercel.app/og-image.png" />
+    <meta name="twitter:image:alt" content="A landscape photo split by a slider: dull and grey on the left, vivid sunset colors on the right." />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Before & After Pro",
+        "url": "https://before-after-site-ten.vercel.app/",
+        "description": "Free online before and after slider. Compare two images, reveal the difference with a drag slider, and export the result. Runs entirely in your browser.",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Any (web browser)",
+        "browserRequirements": "Requires JavaScript and a modern browser.",
+        "image": "https://before-after-site-ten.vercel.app/og-image.png",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "featureList": [
+          "Drag slider comparison",
+          "Side by side and difference modes",
+          "Export as PNG, JPEG or WebP",
+          "Images never leave your browser"
+        ]
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Crawler and no-JS fallback; React replaces it on mount. -->
+      <main>
+        <h1>Before and After Slider</h1>
+        <p>Compare two images with a drag slider. Free, private, and runs entirely in your browser: nothing is uploaded.</p>
+        <ul>
+          <li>Slider, side by side, fade and difference modes</li>
+          <li>Export the comparison as PNG, JPEG or WebP</li>
+          <li>Works with PNG, JPG, WebP, GIF and AVIF</li>
+        </ul>
+        <noscript>Please enable JavaScript to use the image comparison tool.</noscript>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -24,7 +24,12 @@ export function Hero() {
   return (
     <PanoramicSpreadHero
       cards={CARDS}
-      title="See the difference."
+      title={
+        <>
+          See the difference.
+          <span className="sr-only"> Free online before and after image slider.</span>
+        </>
+      }
       description="Compare two images in seconds. Free, private, in your browser."
       action={
         <Button size="lg" onClick={scrollToTool}>

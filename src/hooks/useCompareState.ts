@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { toast } from 'sonner'
+import { trackEvent } from '@/lib/analytics'
 import { initialState, reducer } from '@/lib/compare-state'
 import { disposeImage, loadImage, selectFiles, type LoadedImage } from '@/lib/image-load'
 
@@ -27,7 +28,10 @@ export function useCompareState() {
         toast.error(file.name, { description: 'This file could not be decoded as an image.' })
       }
     }
-    if (loaded.length) dispatch({ type: 'images', images: loaded })
+    if (loaded.length) {
+      dispatch({ type: 'images', images: loaded })
+      trackEvent('images_added', { count: loaded.length })
+    }
   }, [])
 
   const addFiles = useCallback(

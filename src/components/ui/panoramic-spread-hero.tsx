@@ -223,9 +223,9 @@ export default function PanoramicSpreadHero({
               {eyebrow}
             </span>
           ) : null}
-          <h2 className="text-5xl md:text-[5.5vw] font-serif leading-none tracking-tight">
+          <h1 className="text-5xl md:text-[5.5vw] font-serif leading-none tracking-tight">
             {title}
-          </h2>
+          </h1>
           {description ? (
             <p className="mt-6 max-w-[45ch] text-sm md:text-[1.1vw] font-light leading-relaxed opacity-70">
               {description}
