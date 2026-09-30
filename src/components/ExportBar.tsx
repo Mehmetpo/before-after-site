@@ -35,7 +35,14 @@ export function ExportBar({
   const [status, setStatus] = useState<Status>('idle')
   const [progress, setProgress] = useState(0)
   const timers = useRef<number[]>([])
+  // Latest values for the toast Retry action, which outlives the render that created it.
+  const stateRef = useRef(state)
+  const busyRef = useRef<ExportKind | null>(null)
+  const runRef = useRef<(kind: ExportKind) => Promise<void>>(async () => {})
 
+  useEffect(() => {
+    stateRef.current = state
+  })
   useEffect(() => () => timers.current.forEach(clearTimeout), [])
 
   const later = (ms: number, fn: () => void) => {
@@ -43,21 +50,24 @@ export function ExportBar({
   }
 
   const reset = () => {
+    busyRef.current = null
     setBusy(null)
     setStatus('idle')
     setProgress(0)
   }
 
   const run = async (kind: ExportKind) => {
-    if (busy) return
+    if (busyRef.current) return
+    busyRef.current = kind
     setBusy(kind)
     setStatus('downloading')
     setProgress(10)
     // Let the button paint its progress state before the synchronous canvas work.
     await nextFrame()
+    const current = stateRef.current
     try {
       const canvas = renderToCanvas(
-        state,
+        current,
         kind,
         boxRef.current ? { w: boxRef.current.clientWidth, h: boxRef.current.clientHeight } : undefined,
       )
@@ -69,14 +79,14 @@ export function ExportBar({
       setProgress(60)
       let blob: Blob
       try {
-        blob = await canvasToBlob(canvas, state.format, state.quality)
+        blob = await canvasToBlob(canvas, current.format, current.quality)
       } finally {
         // Release the backing store now rather than waiting for GC.
         canvas.width = 0
         canvas.height = 0
       }
       setProgress(100)
-      downloadBlob(blob, buildFilename(kind, state.format))
+      downloadBlob(blob, buildFilename(kind, current.format))
       later(250, () => setStatus('downloaded'))
       later(1450, () => setStatus('complete'))
       later(1750, reset)
@@ -84,10 +94,14 @@ export function ExportBar({
       reset()
       toast.error('Export failed', {
         description: `${e instanceof Error ? e.message : 'Something went wrong.'} Try again, or pick a smaller image or another format.`,
-        action: { label: 'Retry', onClick: () => void run(kind) },
+        action: { label: 'Retry', onClick: () => void runRef.current(kind) },
       })
     }
   }
+
+  useEffect(() => {
+    runRef.current = run
+  })
 
   const statusFor = (kind: ExportKind): Status => (busy === kind ? status : 'idle')
   const lossy = state.format !== 'png'
