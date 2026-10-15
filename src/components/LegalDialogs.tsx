@@ -14,7 +14,8 @@ const COPY: Record<LegalPage, { title: string; body: string[] }> = {
     title: 'Privacy',
     body: [
       'Images are processed locally in your browser and are never sent to a server.',
-      'This site sets no tracking cookies.',
+      'Your images, file names and pixels are never part of the usage statistics we collect.',
+      'This site uses Google Analytics and Vercel Analytics to count visits and which features are used (for example, changing the view mode or exporting). Google Analytics sets cookies and receives your IP address and browser details. You can block it with a content blocker or by turning off cookies for this site.',
       "Your theme choice is stored in your browser's local storage.",
     ],
   },
