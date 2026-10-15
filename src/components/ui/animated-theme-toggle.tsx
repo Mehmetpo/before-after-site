@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 
-function Button({ className, variant, disabled, onClick, children, "aria-label": ariaLabel, ...props }: {
+function Button({ className, disabled, onClick, children, "aria-label": ariaLabel, ...props }: {
   className?: string; variant?: string; disabled?: boolean; onClick?: () => void;
   children?: React.ReactNode; "aria-label"?: string; [key: string]: any
 }) {

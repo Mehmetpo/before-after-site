@@ -6,6 +6,8 @@ import { LEGAL_LINKS, type LegalPage } from '@/lib/legal'
 
 const LegalDialogs = lazy(() => import('@/components/LegalDialogs').then((m) => ({ default: m.LegalDialogs })))
 
+const year = new Date().getFullYear()
+
 export function SiteFooter() {
   const [legal, setLegal] = useState<LegalPage | null>(null)
   // Mount the dialogs chunk on first open and keep it so the close animation can play.
@@ -14,7 +16,6 @@ export function SiteFooter() {
     setDialogsLoaded(true)
     setLegal(id)
   }
-  const year = new Date().getFullYear()
 
   return (
     <>
